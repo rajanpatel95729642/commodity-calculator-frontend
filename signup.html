@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f1e35">
+    <title>Sign Up - Commodity Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #0f1e35;
+            --navy-mid: #1a2f4a;
+            --gold: #c9a84c;
+            --gold-light: #e0c070;
+            --cream: #f5f0e8;
+            --slate: #8a99aa;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--navy);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -200px;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .glow-left {
+            position: fixed;
+            bottom: -200px;
+            left: -200px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(26,47,74,0.8) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Page wrapper */
+        .page-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 960px;
+            min-height: 560px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.15);
+            animation: slideUp 0.5s ease-out both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Left panel */
+        .panel-left {
+            flex: 1;
+            background: linear-gradient(160deg, var(--navy-mid) 0%, #0a1525 100%);
+            padding: 3.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(201,168,76,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-mark {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--cream);
+            letter-spacing: 0.02em;
+            line-height: 1.2;
+        }
+
+        .brand-name span {
+            display: block;
+            font-size: 0.65rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 400;
+            color: var(--slate);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .panel-hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        .panel-hero h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            color: var(--cream);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .panel-hero h2 em {
+            font-style: italic;
+            color: var(--gold);
+        }
+
+        .panel-hero p {
+            color: var(--slate);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            max-width: 300px;
+        }
+
+        .divider-gold {
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+            margin: 1.25rem 0;
+        }
+
+        .steps-list {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .steps-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .step-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .step-text {
+            color: var(--slate);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .step-text strong {
+            display: block;
+            color: var(--cream);
+            font-weight: 500;
+            margin-bottom: 1px;
+        }
+
+        .panel-footer {
+            color: var(--slate);
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* Right panel */
+        .panel-right {
+            width: 420px;
+            flex-shrink: 0;
+            background: #ffffff;
+            padding: 3.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-header {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            color: var(--navy);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-header p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        /* Step indicator */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-dot {
+            width: 28px;
+            height: 4px;
+            border-radius: 2px;
+            background: #e5e7eb;
+            transition: background 0.3s;
+        }
+
+        .step-dot.active {
+            background: var(--gold);
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+        }
+
+        .label-optional {
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            color: #9ca3af;
+            font-size: 0.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.1rem;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 3px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            color: var(--navy);
+            background: #fafafa;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+            background: #fff;
+        }
+
+        .hint-text {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
+
+        /* Code input */
+        .code-input {
+            text-align: center !important;
+            font-size: 2rem !important;
+            font-family: 'Playfair Display', serif !important;
+            letter-spacing: 0.5em !important;
+            padding: 1rem !important;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+            color: var(--cream);
+            border: none;
+            border-radius: 3px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-top: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0a1525 0%, var(--navy) 100%);
+            box-shadow: 0 8px 24px rgba(15,30,53,0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:hover::after { transform: scaleX(1); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled {
+            background: #9ca3af;
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .btn-ghost {
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .btn-ghost:hover { color: var(--gold-light); }
+        .btn-ghost:disabled { color: #9ca3af; cursor: not-allowed; }
+
+        .btn-text {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.83rem;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .btn-text:hover { color: var(--navy); }
+
+        .form-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .form-footer a {
+            color: var(--gold);
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .form-footer a:hover { border-color: var(--gold); }
+
+        .terms-text {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .hidden { display: none; }
+
+        /* verify section extras */
+        .verify-email-badge {
+            background: #f5f0e8;
+            border: 1px solid rgba(201,168,76,0.3);
+            border-radius: 3px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            color: var(--navy);
+            font-weight: 500;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .resend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.25rem;
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 3px;
+            font-size: 0.875rem;
+            font-family: 'DM Sans', sans-serif;
+            z-index: 9999;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: opacity 0.3s;
+        }
+
+        /* Loading overlay */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,30,53,0.6);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+
+        .loading-card {
+            background: #fff;
+            border-radius: 3px;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 680px) {
+            .panel-left { display: none; }
+            .panel-right { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="glow-left"></div>
+
+    <div class="page-wrapper">
+        <!-- Left Panel -->
+        <div class="panel-left">
+            <div class="brand-mark">
+                <div class="brand-icon">🌾</div>
+                <div class="brand-name">
+                    Commodity Calculator
+                    <span>Professional Edition</span>
+                </div>
+            </div>
+
+            <div class="panel-hero">
+                <h2>Start your<br><em>free account</em></h2>
+                <div class="divider-gold"></div>
+                <p>Get started in two simple steps — takes less than a minute.</p>
+                <ul class="steps-list">
+                    <li>
+                        <div class="step-num">1</div>
+                        <div class="step-text">
+                            <strong>Enter your details</strong>
+                            Email and a secure password
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-num">2</div>
+                        <div class="step-text">
+                            <strong>Verify your email</strong>
+                            Enter the 6-digit code we send you
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="panel-footer">© 2026 Commodity Calculator</div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="panel-right">
+
+            <!-- STEP 1: Signup form -->
+            <div id="signup-step">
+                <div class="form-header">
+                    <h1>Create account</h1>
+                    <p>Fill in your details to get started</p>
+                </div>
+
+                <div class="step-indicator">
+                    <div class="step-dot active"></div>
+                    <div class="step-dot"></div>
+                </div>
+
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="you@example.com" required autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Minimum 8 characters" required minlength="8" autocomplete="new-password">
+                        <p class="hint-text">Use at least 8 characters</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Display Name <span class="label-optional">(optional)</span></label>
+                        <input type="text" id="name" placeholder="Your name" autocomplete="name">
+                    </div>
+
+                    <button type="submit" id="signup-btn" class="btn-primary">Continue →</button>
+                </form>
+
+                <div class="form-footer">
+                    Already have an account? <a href="login.html">Sign in</a>
+                </div>
+
+                <p class="terms-text">By signing up, you agree to our Terms of Service</p>
+            </div>
+
+            <!-- STEP 2: Verify email -->
+            <div id="verify-step" class="hidden">
+                <div class="form-header">
+                    <h1>Verify email</h1>
+                    <p>Enter the 6-digit code we sent to:</p>
+                </div>
+
+                <div class="step-indicator">
+                    <div class="step-dot active"></div>
+                    <div class="step-dot active"></div>
+                </div>
+
+                <div class="verify-email-badge">
+                    <span>📧</span>
+                    <span id="verify-email" style="color: var(--gold);"></span>
+                </div>
+
+                <form id="verify-form">
+                    <div class="form-group">
+                        <label for="code">Verification Code</label>
+                        <input type="text" id="code" class="code-input" required maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="000000" autocomplete="one-time-code">
+                        <p class="hint-text">Code expires in 10 minutes</p>
+                    </div>
+
+                    <button type="submit" id="verify-btn" class="btn-primary">Verify & Create Account</button>
+                </form>
+
+                <div class="resend-row">
+                    <button type="button" id="resend-btn" class="btn-ghost" onclick="resendCode()">Resend Code</button>
+                    <button type="button" class="btn-text" onclick="goBackToSignup()">← Different email</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="hidden" style="display:none;">
+        <div class="loading-card">
+            <div class="spinner"></div>
+            <span style="font-family:'DM Sans',sans-serif; color:var(--navy); font-size:0.9rem;">Please wait...</span>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="hidden"></div>
+
+    <script>
+        let userData = {};
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = type === 'error'
+                ? 'fixed bottom-6 right-6 px-5 py-3 rounded bg-red-700 text-white text-sm shadow-xl z-50'
+                : 'fixed bottom-6 right-6 px-5 py-3 rounded bg-gray-800 text-white text-sm shadow-xl z-50';
+            setTimeout(() => { toast.className += ' hidden'; }, 4000);
+        }
+
+        function setLoading(show) {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = show ? 'flex' : 'none';
+        }
+
+        // Step 1: Send verification code
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn   = document.getElementById('signup-btn');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const displayName = document.getElementById('name').value.trim();
+
+            if (!email || !password) { showToast('Please fill in all required fields', 'error'); return; }
+            if (password.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
+
+            userData = { email, password, display_name: displayName || '' };
+
+            btn.disabled = true;
+            btn.textContent = 'Sending code...';
+            setLoading(true);
+
+            try {
+                const res = await axios.post('https://commodity-calculator-api.onrender.com/api/auth/send-signup-code', { email: userData.email });
+                if (res.data.success) {
+                    document.getElementById('signup-step').classList.add('hidden');
+                    document.getElementById('verify-step').classList.remove('hidden');
+                    document.getElementById('verify-email').textContent = userData.email;
+                    showToast('Verification code sent! Check your email.');
+                    setTimeout(() => { document.getElementById('code').focus(); }, 300);
+                } else {
+                    showToast(res.data.message || 'Failed to send code', 'error');
+                }
+            } catch (err) {
+                showToast(err.response?.data?.message || 'Failed to send verification code', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Continue →';
+                setLoading(false);
+            }
+        });
+
+        // Step 2: Verify and register
+        document.getElementById('verify-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn  = document.getElementById('verify-btn');
+            const code = document.getElementById('code').value.trim();
+
+            if (!code || code.length !== 6) { showToast('Please enter a valid 6-digit code', 'error'); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            setLoading(true);
+
+            try {
+                const res = await axios.post('https://commodity-calculator-api.onrender.com/api/auth/register', { ...userData, code });
+                if (res.data.success) {
+                    localStorage.setItem('access_token', res.data.access_token);
+                    localStorage.setItem('refresh_token', res.data.refresh_token);
+                    localStorage.setItem('user', JSON.stringify(res.data.user));
+                    showToast('Account created! Redirecting...');
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+                } else {
+                    showToast(res.data.message || 'Verification failed', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Verify & Create Account';
+                }
+            } catch (err) {
+                showToast(err.response?.data?.message || 'Verification failed', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Verify & Create Account';
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        async function resendCode() {
+            const btn = document.getElementById('resend-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            try {
+                const res = await axios.post('https://commodity-calculator-api.onrender.com/api/auth/send-signup-code', { email: userData.email });
+                showToast(res.data.success ? 'Code resent! Check your email.' : 'Failed to resend code', res.data.success ? 'success' : 'error');
+            } catch (err) {
+                showToast('Failed to resend code', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Resend Code';
+            }
+        }
+
+        function goBackToSignup() {
+            document.getElementById('verify-step').classList.add('hidden');
+            document.getElementById('signup-step').classList.remove('hidden');
+            document.getElementById('code').value = '';
+        }
+
+        document.getElementById('code').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 6) value = value.slice(0, 6);
+            e.target.value = value;
+        });
+
+        if (localStorage.getItem('access_token')) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

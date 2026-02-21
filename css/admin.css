@@ -1,0 +1,111 @@
+/* ── Sidebar nav buttons ───────────────────────────────── */
+.nav-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  text-align: left;
+  color: #9ca3af;
+  transition: background 0.15s, color 0.15s;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.nav-btn:hover  { background: #374151; color: #fff; }
+.nav-btn.active { background: #1d4ed8; color: #fff; font-weight: 600; }
+
+/* ── Stat cards ─────────────────────────────────────────── */
+.stat-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.stat-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; }
+.stat-value { font-size: 1.75rem; font-weight: 700; color: #1f2937; margin-top: .25rem; }
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn-primary {
+  background: #1d4ed8;
+  color: #fff;
+  padding: .5rem 1.25rem;
+  border-radius: .5rem;
+  font-size: .875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-primary:hover { background: #1e40af; }
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  padding: .5rem 1.25rem;
+  border-radius: .5rem;
+  font-size: .875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-secondary:hover { background: #e5e7eb; }
+
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+  padding: .5rem 1.25rem;
+  border-radius: .5rem;
+  font-size: .875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-danger:hover { background: #b91c1c; }
+
+.btn-sm {
+  padding: .25rem .75rem;
+  font-size: .75rem;
+  border-radius: .375rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ── Page section ────────────────────────────────────────── */
+.page-section { animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+/* ── Table rows ──────────────────────────────────────────── */
+tbody tr:hover { background: #f9fafb; }
+tbody td { padding: .75rem 1rem; border-bottom: 1px solid #f3f4f6; color: #374151; }
+
+/* ── Plan badges ─────────────────────────────────────────── */
+.badge-free    { background:#e0f2fe; color:#0369a1; padding:.15rem .5rem; border-radius:999px; font-size:.7rem; font-weight:700; }
+.badge-premium { background:#fef9c3; color:#92400e; padding:.15rem .5rem; border-radius:999px; font-size:.7rem; font-weight:700; }
+
+/* ── Announcement type colors ────────────────────────────── */
+.ann-info    { border-left: 4px solid #3b82f6; background: #eff6ff; }
+.ann-success { border-left: 4px solid #22c55e; background: #f0fdf4; }
+.ann-warning { border-left: 4px solid #f59e0b; background: #fffbeb; }
+.ann-error   { border-left: 4px solid #ef4444; background: #fef2f2; }
+
+/* ── Growth chart period buttons ─────────────────────────── */
+.growth-btn {
+  padding: .2rem .6rem;
+  border-radius: .375rem;
+  font-size: .7rem;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: none;
+  cursor: pointer;
+}
+.growth-btn.active { background: #1d4ed8; color: #fff; }
+
+/* ── Mono toggle card colors ─────────────────────────────── */
+.mono-enabled  { border-left: 4px solid #22c55e; }
+.mono-disabled { border-left: 4px solid #e5e7eb; }

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel – Commodity Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="bg-gray-100 font-sans">
+
+<!-- ═══════════════════════════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════════════════════════ -->
+<div class="flex h-screen overflow-hidden">
+
+  <aside id="sidebar" class="w-64 bg-gray-900 text-white flex flex-col flex-shrink-0">
+    <!-- Logo -->
+    <div class="px-6 py-5 border-b border-gray-700">
+      <p class="text-xs text-gray-400 uppercase tracking-widest">Admin Panel</p>
+      <h1 class="text-lg font-bold text-white mt-1">🌾 Commodity Calc</h1>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+      <button onclick="showPage('dashboard')" class="nav-btn active" data-page="dashboard">
+        📊 Dashboard
+      </button>
+      <button onclick="showPage('users')" class="nav-btn" data-page="users">
+        👥 Users
+      </button>
+      <button onclick="showPage('calculations')" class="nav-btn" data-page="calculations">
+        📝 Calculations
+      </button>
+      <button onclick="showPage('announcements')" class="nav-btn" data-page="announcements">
+        📣 Announcements
+      </button>
+      <button onclick="showPage('monetization')" class="nav-btn" data-page="monetization">
+        💰 Monetization
+      </button>
+      <button onclick="showPage('logs')" class="nav-btn" data-page="logs">
+        🔍 Activity Logs
+      </button>
+      <button onclick="showPage('settings')" class="nav-btn" data-page="settings">
+        ⚙️ Settings
+      </button>
+    </nav>
+
+    <!-- Back to app -->
+    <div class="px-4 py-4 border-t border-gray-700">
+      <button onclick="window.location.href='index.html'"
+        class="w-full text-left px-3 py-2 rounded text-gray-400 hover:text-white hover:bg-gray-700 text-sm">
+        ← Back to App
+      </button>
+      <button onclick="doLogout()"
+        class="w-full text-left px-3 py-2 rounded text-gray-400 hover:text-red-400 hover:bg-gray-700 text-sm mt-1">
+        🚪 Logout
+      </button>
+    </div>
+  </aside>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════════════════ -->
+  <main class="flex-1 overflow-y-auto">
+
+    <!-- Header bar -->
+    <header class="bg-white shadow-sm px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+      <h2 id="page-title" class="text-xl font-bold text-gray-800">Dashboard</h2>
+      <div class="flex items-center gap-3">
+        <span id="admin-email" class="text-sm text-gray-500"></span>
+        <span class="bg-red-100 text-red-700 text-xs font-semibold px-2 py-1 rounded">ADMIN</span>
+      </div>
+    </header>
+
+    <div class="p-8">
+
+      <!-- ═══════ PAGE: DASHBOARD ═══════ -->
+      <section id="page-dashboard" class="page-section">
+
+        <!-- Stats cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="stat-card"><div class="stat-label">Total Users</div><div id="s-total-users" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">New This Week</div><div id="s-new-week" class="stat-value text-green-600">—</div></div>
+          <div class="stat-card"><div class="stat-label">Total Calculations</div><div id="s-total-calcs" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Today</div><div id="s-calcs-today" class="stat-value text-blue-600">—</div></div>
+          <div class="stat-card"><div class="stat-label">Free Users</div><div id="s-free" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Premium Users</div><div id="s-premium" class="stat-value text-yellow-600">—</div></div>
+          <div class="stat-card"><div class="stat-label">Yearly Revenue</div><div id="s-revenue" class="stat-value text-green-600">—</div></div>
+          <div class="stat-card"><div class="stat-label">Monetization</div><div id="s-mono" class="stat-value text-sm">—</div></div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <!-- User growth chart -->
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-gray-700">📈 User Growth</h3>
+              <div class="flex gap-2 text-xs">
+                <button onclick="loadGrowthChart(7)"  class="growth-btn" data-days="7">7d</button>
+                <button onclick="loadGrowthChart(30)" class="growth-btn active" data-days="30">30d</button>
+                <button onclick="loadGrowthChart(90)" class="growth-btn" data-days="90">90d</button>
+              </div>
+            </div>
+            <canvas id="growthChart" height="220"></canvas>
+          </div>
+
+          <!-- Commodity breakdown -->
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="font-bold text-gray-700 mb-4">🌾 Commodity Breakdown</h3>
+            <canvas id="commodityChart" height="220"></canvas>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <h3 class="font-bold text-gray-700 mb-4">⚡ Quick Actions</h3>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="showPage('announcements')" class="btn-secondary">📣 Send Announcement</button>
+            <button onclick="exportUsers()" class="btn-secondary">📤 Export Users CSV</button>
+            <button onclick="exportCalcs()" class="btn-secondary">📤 Export Calculations CSV</button>
+            <button onclick="showPage('monetization')" class="btn-secondary">💰 Monetization</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: USERS ═══════ -->
+      <section id="page-users" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-4">
+          <div class="flex flex-wrap gap-3 items-end">
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">Search</label>
+              <input id="user-search" type="text" placeholder="Email..." onkeyup="loadUsers()"
+                class="border border-gray-300 rounded px-3 py-2 text-sm w-56">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">Plan</label>
+              <select id="user-tier" onchange="loadUsers()" class="border border-gray-300 rounded px-3 py-2 text-sm">
+                <option value="">All</option>
+                <option value="free">Free</option>
+                <option value="premium">Premium</option>
+              </select>
+            </div>
+            <button onclick="exportUsers()" class="btn-secondary ml-auto">📤 Export CSV</button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3 text-left">Email</th>
+                <th class="px-4 py-3 text-left">Plan</th>
+                <th class="px-4 py-3 text-left">Calculations</th>
+                <th class="px-4 py-3 text-left">Joined</th>
+                <th class="px-4 py-3 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+          <div id="users-pagination" class="px-4 py-3 border-t flex justify-between items-center text-sm text-gray-500"></div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: USER DETAIL (slide-in) ═══════ -->
+      <section id="page-user-detail" class="page-section hidden">
+        <button onclick="showPage('users')" class="btn-secondary mb-4">← Back to Users</button>
+        <div id="user-detail-content"></div>
+      </section>
+
+      <!-- ═══════ PAGE: CALCULATIONS ═══════ -->
+      <section id="page-calculations" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-4">
+          <div class="flex flex-wrap gap-3 items-end">
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">Commodity</label>
+              <select id="calc-commodity" onchange="loadCalculations()" class="border border-gray-300 rounded px-3 py-2 text-sm">
+                <option value="">All</option>
+                <option value="jeera">Jeera</option>
+                <option value="souff">Souff</option>
+                <option value="ajwain">Ajwain</option>
+                <option value="isabgul">Isabgul</option>
+              </select>
+            </div>
+            <button onclick="exportCalcs()" class="btn-secondary ml-auto">📤 Export CSV</button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3 text-left">Date</th>
+                <th class="px-4 py-3 text-left">User</th>
+                <th class="px-4 py-3 text-left">Commodity</th>
+                <th class="px-4 py-3 text-left">Name/Vakal</th>
+                <th class="px-4 py-3 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="calcs-tbody"></tbody>
+          </table>
+          <div id="calcs-pagination" class="px-4 py-3 border-t flex justify-between items-center text-sm text-gray-500"></div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: ANNOUNCEMENTS ═══════ -->
+      <section id="page-announcements" class="page-section hidden">
+        <!-- Create form -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h3 class="font-bold text-gray-700 mb-4">📣 Create Announcement</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <input id="ann-title" type="text" placeholder="Announcement title..."
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+              <textarea id="ann-message" rows="3" placeholder="Write your message..."
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+            </div>
+            <div class="flex flex-wrap gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <select id="ann-type" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  <option value="info">ℹ️ Info (Blue)</option>
+                  <option value="success">✅ Success (Green)</option>
+                  <option value="warning">⚠️ Warning (Yellow)</option>
+                  <option value="error">❌ Error (Red)</option>
+                </select>
+              </div>
+              <div class="flex items-end">
+                <label class="flex items-center gap-2 text-sm text-gray-700">
+                  <input id="ann-email" type="checkbox" class="rounded">
+                  Send email to all users
+                </label>
+              </div>
+            </div>
+            <button onclick="createAnnouncement()" class="btn-primary">📣 Send Announcement</button>
+          </div>
+        </div>
+
+        <!-- List -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <h3 class="font-bold text-gray-700 mb-4">📋 All Announcements</h3>
+          <div id="announcements-list"></div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: MONETIZATION ═══════ -->
+      <section id="page-monetization" class="page-section hidden">
+
+        <!-- Toggle card -->
+        <div id="mono-card" class="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-bold text-gray-800">💰 Monetization</h3>
+              <p id="mono-status-text" class="text-sm text-gray-500 mt-1">Loading...</p>
+            </div>
+            <button id="mono-toggle-btn" onclick="toggleMonetization()" class="btn-primary px-6">
+              Loading...
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats (shown when enabled) -->
+        <div id="mono-stats" class="hidden grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="stat-card"><div class="stat-label">Free Users</div><div id="ms-free" class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Premium Users</div><div id="ms-premium" class="stat-value text-yellow-600">—</div></div>
+          <div class="stat-card"><div class="stat-label">Conversion Rate</div><div id="ms-conv" class="stat-value text-blue-600">—</div></div>
+          <div class="stat-card"><div class="stat-label">Yearly Revenue</div><div id="ms-rev" class="stat-value text-green-600">—</div></div>
+        </div>
+
+        <!-- Limits settings -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Free plan -->
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="font-bold text-gray-700 mb-4">🆓 Free Plan Limits</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">Calculations per year</label>
+                <input id="limit-calcs" type="number" min="1" value="5"
+                  class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">History items limit</label>
+                <input id="limit-history" type="number" min="1" value="5"
+                  class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-32">
+              </div>
+              <div>
+                <label class="flex items-center gap-2 text-sm text-gray-600">
+                  <input id="limit-pdf" type="checkbox" class="rounded">
+                  Allow PDF export for free users
+                </label>
+              </div>
+              <button onclick="saveMonetizationSettings()" class="btn-primary">💾 Save Limits</button>
+            </div>
+          </div>
+
+          <!-- Premium plan -->
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="font-bold text-gray-700 mb-4">💎 Premium Plan</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">Price per year (₹)</label>
+                <input id="premium-price" type="number" min="0" value="299"
+                  class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-40">
+              </div>
+              <div class="text-sm text-gray-500 space-y-1">
+                <p>✅ Unlimited calculations per year</p>
+                <p>✅ Unlimited history items</p>
+                <p>✅ PDF export enabled</p>
+                <p>✅ No upgrade banners</p>
+              </div>
+              <button onclick="saveMonetizationSettings()" class="btn-primary">💾 Save Pricing</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: LOGS ═══════ -->
+      <section id="page-logs" class="page-section hidden">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="p-4 border-b">
+            <h3 class="font-bold text-gray-700">🔍 Activity Logs</h3>
+          </div>
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3 text-left">Time</th>
+                <th class="px-4 py-3 text-left">User</th>
+                <th class="px-4 py-3 text-left">Action</th>
+                <th class="px-4 py-3 text-left">Details</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody"></tbody>
+          </table>
+          <div id="logs-pagination" class="px-4 py-3 border-t flex justify-between items-center text-sm text-gray-500"></div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: SETTINGS ═══════ -->
+<section id="page-settings" class="page-section hidden">
+  <div class="bg-white rounded-xl shadow-sm p-6 max-w-lg">
+    <h3 class="font-bold text-gray-700 mb-6">⚙️ App Settings</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">App Name</label>
+        <input id="set-app-name" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+      </div>
+
+      <!-- MAINTENANCE MODE CARD -->
+      <div id="maintenance-card" class="rounded-xl border-2 p-4 transition-all border-gray-200 bg-gray-50">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span id="maintenance-icon" class="text-2xl">🟢</span>
+            <div>
+              <div class="font-bold text-gray-800">Maintenance Mode</div>
+              <div id="maintenance-status-text" class="text-sm text-gray-500">App is running normally</div>
+            </div>
+          </div>
+          <!-- Toggle Switch -->
+          <button id="maintenance-toggle-btn" onclick="toggleMaintenanceMode()"
+            class="relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none"
+            style="background:#d1d5db;">
+            <span id="maintenance-toggle-circle"
+              class="inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform translate-x-1">
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Maintenance Message</label>
+        <textarea id="set-maintenance-msg" rows="2" placeholder="e.g. We'll be back shortly. Thank you for your patience."
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></textarea>
+      </div>
+
+      <button onclick="saveSettings()" class="btn-primary">💾 Save Settings</button>
+    </div>
+  </div>
+</section>
+
+    </div><!-- /p-8 -->
+  </main>
+</div><!-- /flex -->
+
+<!-- Toast -->
+<div id="toast" class="hidden fixed bottom-6 right-6 bg-gray-800 text-white px-5 py-3 rounded-lg shadow-lg z-50 text-sm"></div>
+
+<!-- Confirm modal -->
+<div id="confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl p-6 max-w-sm w-full shadow-xl">
+    <h3 class="font-bold text-gray-800 text-lg mb-2" id="confirm-title">Confirm Action</h3>
+    <p class="text-gray-600 text-sm mb-6" id="confirm-message"></p>
+    <div class="flex gap-3">
+      <button onclick="closeConfirm()" class="flex-1 btn-secondary">Cancel</button>
+      <button id="confirm-ok" class="flex-1 btn-danger">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
