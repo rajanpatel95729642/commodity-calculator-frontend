@@ -82,8 +82,10 @@ function showPage(name) {
 // ─── SAFE API CALL (uses fetch, bypasses axios interceptor) ──────
 
 async function adminFetch(method, path, body = null) {
-    const token = localStorage.getItem('access_token');
-    const opts  = {
+    // Try to refresh if token is close to expiring or already expired
+    let token = localStorage.getItem('access_token');
+    
+    const opts = {
         method,
         headers: {
             'Content-Type':  'application/json',
@@ -91,10 +93,51 @@ async function adminFetch(method, path, body = null) {
         }
     };
     if (body) opts.body = JSON.stringify(body);
-    const res  = await fetch(`https://commodity-calculator-api.onrender.com/api/admin${path}`, opts);
+    
+    let res = await fetch(`https://commodity-calculator-api.onrender.com/api/admin${path}`, opts);
+    
+    // If 401, try refreshing the token once
+    if (res.status === 401) {
+        const refreshed = await tryRefreshToken();
+        if (!refreshed) {
+            localStorage.clear();
+            window.location.href = 'login.html';
+            return;
+        }
+        // Retry with new token
+        token = localStorage.getItem('access_token');
+        opts.headers['Authorization'] = `Bearer ${token}`;
+        res = await fetch(`https://commodity-calculator-api.onrender.com/api/admin${path}`, opts);
+    }
+    
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
     return data;
+}
+
+async function tryRefreshToken() {
+    try {
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (!refreshToken) return false;
+        
+        const res = await fetch('https://commodity-calculator-api.onrender.com/api/auth/refresh', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${refreshToken}`
+            }
+        });
+        
+        if (!res.ok) return false;
+        
+        const data = await res.json();
+        if (data.access_token) {
+            localStorage.setItem('access_token', data.access_token);
+            return true;
+        }
+        return false;
+    } catch {
+        return false;
+    }
 }
 
 // ─── DASHBOARD ───────────────────────────────────────────────────
