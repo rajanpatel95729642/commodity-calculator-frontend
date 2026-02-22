@@ -2,7 +2,7 @@
 // FIXED: interceptor no longer redirects on admin API calls
 
 const API_CONFIG = {
-    BASE_URL: 'https://commodity-calculator-api.onrender.com'
+    BASE_URL: 'https://commodity-calculator-api.onrender.com/api'
 };
 
 axios.defaults.baseURL = API_CONFIG.BASE_URL;
