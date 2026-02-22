@@ -7,7 +7,7 @@ const API_CONFIG = {
 
 axios.defaults.baseURL = API_CONFIG.BASE_URL;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
-axios.defaults.timeout = 10000;
+axios.defaults.timeout = 120000;
 
 const TokenManager = {
     getAccessToken()  { return localStorage.getItem('access_token'); },
