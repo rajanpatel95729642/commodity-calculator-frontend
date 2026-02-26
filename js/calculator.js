@@ -18,7 +18,7 @@ const Calculator = {
             const user = response.user;
             // Update localStorage with fresh data
             TokenManager.setUser(user);
-            this.defaultExpenses = user.default_expenses || 150;
+            this.defaultExpenses = user.settings.default_expenses || 150;
             console.log('Loaded expenses from API:', this.defaultExpenses);
         }
     } catch (error) {
