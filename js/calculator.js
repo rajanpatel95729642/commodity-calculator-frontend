@@ -6,23 +6,30 @@ const Calculator = {
     
     // Initialize from user settings (CLOUD ONLY)
     async init() {
-        // Must be logged in to use app
-        if (!API.isLoggedIn()) {
-            console.log('Not logged in - using defaults');
-            return;
+    if (!API.isLoggedIn()) {
+        console.log('Not logged in - using defaults');
+        return;
+    }
+    
+    try {
+        // Fetch fresh data from API instead of localStorage
+        const response = await API.getProfile();
+        if (response.success && response.user) {
+            const user = response.user;
+            // Update localStorage with fresh data
+            TokenManager.setUser(user);
+            this.defaultExpenses = user.default_expenses || 150;
+            console.log('Loaded expenses from API:', this.defaultExpenses);
         }
-        
-        try {
-            const user = API.getCurrentUser();
-		if (user) {
-    		this.defaultExpenses = user.default_expenses || 150;
-		}
-        } catch (error) {
-            console.error('Error loading user settings:', error);
-            // Use defaults if error
-            this.defaultExpenses = 150;
+    } catch (error) {
+        console.error('Error loading user settings:', error);
+        // Fallback to localStorage if API fails
+        const user = API.getCurrentUser();
+        if (user) {
+            this.defaultExpenses = user.default_expenses || 150;
         }
-    },
+    }
+},
 
     // Simple Calculator Method
     calculateSimple: function(purchasePrice, wastagePercent) {
