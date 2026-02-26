@@ -14,9 +14,9 @@ const Calculator = {
         
         try {
             const user = API.getCurrentUser();
-            if (user && user.settings) {
-                this.defaultExpenses = user.settings.default_expenses || 150;
-            }
+		if (user) {
+    		this.defaultExpenses = user.default_expenses || 150;
+		}
         } catch (error) {
             console.error('Error loading user settings:', error);
             // Use defaults if error
@@ -179,7 +179,7 @@ const Calculator = {
             if (API.isLoggedIn()) {
                 try {
                     const user = API.getCurrentUser();
-                    const fontSize = user.settings ? user.settings.font_size : 'medium';
+                    const fontSize = user.font_size || 'medium';
                     await API.updateSettings(exp, fontSize);
                     return true;
                 } catch (error) {
