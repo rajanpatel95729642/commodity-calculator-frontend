@@ -32,25 +32,27 @@ const Calculator = {
 },
 
     // Simple Calculator Method
-    calculateSimple: function(purchasePrice, wastagePercent) {
-        const price = parseFloat(purchasePrice);
-        const exp = parseFloat(this.defaultExpenses);
-        const wastage = parseFloat(wastagePercent);
+    calculateSimple: function(purchasePrice, wastagePercent, includeExpenses = true) {
+    const price = parseFloat(purchasePrice);
+    const wastage = parseFloat(wastagePercent);
 
-        if (isNaN(price) || isNaN(exp) || isNaN(wastage)) {
-            return { error: 'Please fill all fields with valid numbers' };
-        }
+    if (isNaN(price) || isNaN(wastage)) {
+        return { error: 'Please fill all fields with valid numbers' };
+    }
 
-        const subtotal = price + exp;
-        const wastageAmount = subtotal * (wastage / 100);
-        const totalCosting = subtotal + wastageAmount;
+    const exp = includeExpenses ? parseFloat(this.defaultExpenses) : 0;
+    const subtotal = price + exp;
+    const wastageAmount = subtotal * (wastage / 100);
+    const totalCosting = subtotal + wastageAmount;
 
-        return {
-            purchasePrice: price.toFixed(2),
-            totalCosting: totalCosting.toFixed(2),
-            wastagePercent: wastage.toFixed(2)
-        };
-    },
+    return {
+        purchasePrice: price.toFixed(2),
+        expenses: exp.toFixed(2),
+        includeExpenses: includeExpenses,
+        totalCosting: totalCosting.toFixed(2),
+        wastagePercent: wastage.toFixed(2)
+    };
+},
 
     // SOUFF Calculator - Only Wastage (No Costing)
     calculateSouff: function(purchases, boxWeights) {

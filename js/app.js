@@ -577,7 +577,8 @@ async function calculateSimple() {
     const allowed = await PremiumSystem.canCalculate();
     if (!allowed) return;
     
-    const result = Calculator.calculateSimple(purchasePrice, wastagePercent);
+    const includeExpenses = document.getElementById('include-expenses-toggle').checked;
+    const result = Calculator.calculateSimple(purchasePrice, wastagePercent, includeExpenses);
     
     if (result.error) {
         alert(result.error);
@@ -587,6 +588,8 @@ async function calculateSimple() {
     // Display result
     document.getElementById('result-purchase-price').textContent = '₹' + result.purchasePrice;
     document.getElementById('result-total-costing').textContent = '₹' + result.totalCosting;
+    document.getElementById('result-expenses-row').style.display = includeExpenses ? 'flex' : 'none';
+    document.getElementById('result-expenses').textContent = '₹' + result.expenses;
     document.getElementById('simple-result').classList.remove('hidden');
     await PremiumSystem.incrementUsage();
 }
