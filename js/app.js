@@ -433,35 +433,54 @@ function removeSouffPurchaseRow(row) {
 async function calculateSouff() {
     const allowed = await PremiumSystem.canCalculate();
     if (!allowed) return;
+
     const purchases = getSouffPurchaseData();
     const boxWeights = getSouffBoxWeights();
+    const includeCosting = document.getElementById('souff-costing-toggle')?.checked || false;
     
     if (purchases.length === 0) {
-        alert('Please enter at least one purchase weight and price');
+        alert('Please enter at least one purchase weight');
         return;
     }
+
+    // If costing is ON, validate that prices are entered
+    if (includeCosting) {
+        const hasPrices = purchases.some(p => p.price > 0);
+        if (!hasPrices) {
+            alert('Please enter purchase prices for costing calculation');
+            return;
+        }
+    }
     
-    const result = Calculator.calculateSouff(purchases, boxWeights);
+    const result = Calculator.calculateSouff(purchases, boxWeights, includeCosting);
     
     if (result.error) {
         alert(result.error);
         return;
     }
     
-    // Display results
+    // Display wastage results
     document.getElementById('souff-result-wastage-weight').textContent = result.wastageWeight + ' kg';
     document.getElementById('souff-result-wastage-percent').textContent = result.wastagePercent + '%';
     document.getElementById('souff-result-purchase-weight').textContent = result.totalPurchaseWeight + ' kg';
     document.getElementById('souff-result-taiyar-weight').textContent = result.totalTaiyarWeight + ' kg';
+    
+    // Show/hide costing result
+    const costingResult = document.getElementById('souff-costing-result');
+    if (includeCosting && result.aakhoPaloCosting) {
+        document.getElementById('souff-result-avg-price').textContent = '₹' + result.avgPrice;
+        document.getElementById('souff-result-aakho-palo').textContent = '₹' + result.aakhoPaloCosting;
+        costingResult.classList.remove('hidden');
+    } else {
+        costingResult.classList.add('hidden');
+    }
     
     document.getElementById('souff-result').classList.remove('hidden');
     document.getElementById('souff-export-section').classList.remove('hidden');
     await PremiumSystem.incrementUsage();
 }
 
-// Reset Souff Calculator
 function resetSouff() {
-    // Reset to single purchase row
     const container = document.getElementById('souff-purchase-rows-container');
     container.innerHTML = `
         <div class="souff-purchase-row" style="margin-bottom:0.65rem;">
@@ -478,7 +497,6 @@ function resetSouff() {
         </div>
     `;
     
-    // Reset all box weights
     document.getElementById('souff-box-jado-mal').value = '';
     document.getElementById('souff-box-recleaning').value = '';
     document.getElementById('souff-box-recleaning-barik').value = '';
@@ -488,30 +506,36 @@ function resetSouff() {
     document.getElementById('souff-box-surbhi').value = '';
     document.getElementById('souff-box-kacho-jado-mal').value = '';
     
-    // Hide results
     document.getElementById('souff-result').classList.add('hidden');
     document.getElementById('souff-export-section').classList.add('hidden');
     document.getElementById('souff-purchase-summary').classList.add('hidden');
-    
-    // Reset taiyar weight
     document.getElementById('souff-total-taiyar-weight').textContent = '0 kg';
+
+    // Reset costing toggle
+    const toggle = document.getElementById('souff-costing-toggle');
+    const track = document.getElementById('souff-costing-track');
+    const thumb = document.getElementById('souff-costing-thumb');
+    if (toggle) {
+        toggle.checked = false;
+        track.style.background = '#cbd5e1';
+        thumb.style.transform = 'translateX(0px)';
+    }
 }
 
-// Save Souff to History
 async function saveSouffToHistory(nameVakal) {
     const purchases = getSouffPurchaseData();
     const boxWeights = getSouffBoxWeights();
+    const includeCosting = document.getElementById('souff-costing-toggle')?.checked || false;
     
-    const result = Calculator.calculateSouff(purchases, boxWeights);
+    const result = Calculator.calculateSouff(purchases, boxWeights, includeCosting);
     
     if (result.error) {
         alert(result.error);
         return;
     }
     
-    // Prepare data to save - INCLUDE type field
     let saveData = {
-        type: 'souff', // ⭐ IMPORTANT: Add type field
+        type: 'souff',
         nameVakal: nameVakal,
         commodity: 'souff',
         purchases: purchases,
@@ -521,6 +545,13 @@ async function saveSouffToHistory(nameVakal) {
         wastageWeight: result.wastageWeight,
         wastagePercent: result.wastagePercent
     };
+
+    // Save costing data if available
+    if (includeCosting && result.aakhoPaloCosting) {
+        saveData.avgPrice = result.avgPrice;
+        saveData.aakhoPaloCosting = result.aakhoPaloCosting;
+        saveData.includeCosting = true;
+    }
     
     try {
         await Calculator.saveToHistory('souff', saveData, 'souff');

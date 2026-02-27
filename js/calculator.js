@@ -55,7 +55,7 @@ const Calculator = {
 },
 
     // SOUFF Calculator - Only Wastage (No Costing)
-    calculateSouff: function(purchases, boxWeights) {
+    calculateSouff: function(purchases, boxWeights, includeCosting = false) {
         // Validate purchases
         if (!purchases || purchases.length === 0) {
             return { error: 'Please provide at least one purchase' };
@@ -63,15 +63,28 @@ const Calculator = {
 
         // Calculate total purchase weight
         let totalPurchaseWeight = 0;
+        let weightedSum = 0;
+        let hasPrices = false;
+
         purchases.forEach(purchase => {
             const weight = parseFloat(purchase.weight);
+            const price = parseFloat(purchase.price);
             if (!isNaN(weight)) {
                 totalPurchaseWeight += weight;
+            }
+            if (!isNaN(weight) && !isNaN(price) && weight > 0 && price > 0) {
+                weightedSum += (weight * price) / 20;
+                hasPrices = true;
             }
         });
 
         if (totalPurchaseWeight === 0) {
             return { error: 'Total purchase weight cannot be zero' };
+        }
+
+        // Validate prices if costing mode is on
+        if (includeCosting && !hasPrices) {
+            return { error: 'Please enter purchase prices for costing calculation' };
         }
 
         // Calculate total box weight (Taiyar Weight)
@@ -100,13 +113,28 @@ const Calculator = {
         const wastageWeight = totalPurchaseWeight - totalTaiyarWeight;
         const wastagePercent = (wastageWeight / totalPurchaseWeight) * 100;
 
-        return {
+        const result = {
             totalPurchaseWeight: totalPurchaseWeight.toFixed(2),
             boxes: boxes,
             totalTaiyarWeight: totalTaiyarWeight.toFixed(2),
             wastageWeight: wastageWeight.toFixed(2),
             wastagePercent: wastagePercent.toFixed(2)
         };
+
+        // Calculate Aakho Palo Costing if costing mode is ON
+        if (includeCosting && hasPrices && totalTaiyarWeight > 0) {
+            const exp = parseFloat(this.defaultExpenses);
+            const avgPrice = (weightedSum / totalPurchaseWeight) * 20;
+            const beforeCleaningCosting = avgPrice + exp;
+            const aakhoPaloCosting = (((beforeCleaningCosting * totalPurchaseWeight) / 20) / totalTaiyarWeight) * 20;
+
+            result.avgPrice = avgPrice.toFixed(2);
+            result.beforeCleaningCosting = beforeCleaningCosting.toFixed(2);
+            result.aakhoPaloCosting = aakhoPaloCosting.toFixed(2);
+            result.includeCosting = true;
+        }
+
+        return result;
     },
 
     // Combined Calculator Method (For Jeera, Ajwain, Isabgul)
