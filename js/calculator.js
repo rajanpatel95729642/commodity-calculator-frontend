@@ -121,17 +121,17 @@ const Calculator = {
             wastagePercent: wastagePercent.toFixed(2)
         };
 
-        // ⭐ Calculate Aakho Palo Costing using approxPrice
-    if (includeCosting && approxPrice && totalTaiyarWeight > 0) {
-        const exp = parseFloat(this.defaultExpenses);
-        const beforeCleaningCosting = approxPrice + exp;
-        const aakhoPaloCosting = (((beforeCleaningCosting * totalPurchaseWeight) / 20) / totalTaiyarWeight) * 20;
+        // Calculate Aakho Palo Costing if costing mode is ON
+        if (includeCosting && approxPrice && totalTaiyarWeight > 0) {
+            const exp = parseFloat(this.defaultExpenses);
+            const beforeCleaningCosting = approxPrice + exp;
+            const aakhoPaloCosting = (((beforeCleaningCosting * totalPurchaseWeight) / 20) / totalTaiyarWeight) * 20;
 
-        result.approxPrice = approxPrice.toFixed(2);
-        result.beforeCleaningCosting = beforeCleaningCosting.toFixed(2);
-        result.aakhoPaloCosting = aakhoPaloCosting.toFixed(2);
-        result.includeCosting = true;
-    }
+            result.approxPrice = approxPrice.toFixed(2);
+            result.beforeCleaningCosting = beforeCleaningCosting.toFixed(2);
+            result.aakhoPaloCosting = aakhoPaloCosting.toFixed(2);
+            result.includeCosting = true;
+        }
 
     return result;
 },
