@@ -55,7 +55,7 @@ const Calculator = {
 },
 
     // SOUFF Calculator - Only Wastage (No Costing)
-    calculateSouff: function(purchases, boxWeights, includeCosting = false) {
+    calculateSouff: function(purchases, boxWeights, includeCosting = false, approxPrice = null) {
         // Validate purchases
         if (!purchases || purchases.length === 0) {
             return { error: 'Please provide at least one purchase' };
