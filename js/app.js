@@ -64,6 +64,27 @@ function setupExpenseToggle() {
     });
 }
 
+function setupSouffCostingToggle() {
+    const toggle = document.getElementById('souff-costing-toggle');
+    const track = document.getElementById('souff-costing-track');
+    const thumb = document.getElementById('souff-costing-thumb');
+
+    if (!toggle) return;
+
+    toggle.addEventListener('change', function() {
+        if (this.checked) {
+            track.style.background = 'var(--gold)';
+            thumb.style.transform = 'translateX(20px)';
+        } else {
+            track.style.background = '#cbd5e1';
+            thumb.style.transform = 'translateX(0px)';
+            // Hide costing result if toggle turned off
+            const costingResult = document.getElementById('souff-costing-result');
+            if (costingResult) costingResult.classList.add('hidden');
+        }
+    });
+}
+
 function setupEventListeners() {
     // Menu
     document.getElementById('menu-btn').addEventListener('click', function(e) {
