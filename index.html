@@ -1182,28 +1182,6 @@
         }
 
         await Calculator.init();
-        
-        // Update toggle label with actual default expenses
-        const toggleValueEl = document.getElementById('expense-toggle-value');
-        if (toggleValueEl) toggleValueEl.textContent = Calculator.getDefaultExpenses();
-
-        // Toggle logic
-        const toggle = document.getElementById('include-expenses-toggle');
-        const track = document.getElementById('toggle-track');
-        const thumb = document.getElementById('toggle-thumb');
-        const label = document.getElementById('expense-toggle-label');
-
-        toggle.addEventListener('change', function() {
-            if (this.checked) {
-                track.style.background = 'var(--gold)';
-                thumb.style.transform = 'translateX(20px)';
-                label.innerHTML = '₹<span id="expense-toggle-value">' + Calculator.getDefaultExpenses() + '</span> will be added';
-            } else {
-                track.style.background = '#cbd5e1';
-                thumb.style.transform = 'translateX(0px)';
-                label.innerHTML = 'Expenses not included';
-            }
-        });
     });
 </script>
 

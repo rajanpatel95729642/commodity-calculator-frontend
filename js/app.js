@@ -36,6 +36,32 @@ function initializeApp() {
     
     // Setup event listeners
     setupEventListeners();
+    setupExpenseToggle();
+}
+
+function setupExpenseToggle() {
+    const toggle = document.getElementById('include-expenses-toggle');
+    const track = document.getElementById('toggle-track');
+    const thumb = document.getElementById('toggle-thumb');
+    const label = document.getElementById('expense-toggle-label');
+
+    if (!toggle) return;
+
+    // Update label with current expenses value
+    const toggleValueEl = document.getElementById('expense-toggle-value');
+    if (toggleValueEl) toggleValueEl.textContent = Calculator.getDefaultExpenses();
+
+    toggle.addEventListener('change', function() {
+        if (this.checked) {
+            track.style.background = 'var(--gold)';
+            thumb.style.transform = 'translateX(20px)';
+            label.innerHTML = '₹<span id="expense-toggle-value">' + Calculator.getDefaultExpenses() + '</span> will be added';
+        } else {
+            track.style.background = '#cbd5e1';
+            thumb.style.transform = 'translateX(0px)';
+            label.innerHTML = 'Expenses not included';
+        }
+    });
 }
 
 function setupEventListeners() {
