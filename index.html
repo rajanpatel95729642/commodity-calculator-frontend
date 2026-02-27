@@ -3,1187 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f1e35">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: https://cdn.tailwindcss.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com;">
     <title>Commodity Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --navy:      #0f1e35;
-            --navy-mid:  #1a2f4a;
-            --navy-light:#243d5c;
-            --gold:      #c9a84c;
-            --gold-light:#e0c070;
-            --cream:     #f5f0e8;
-            --slate:     #8a99aa;
-            --bg:        #f4f6f9;
-            --white:     #ffffff;
-            --border:    #e2e8f0;
-            --success:   #1a7a4a;
-            --danger:    #c0392b;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--navy);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
             -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
+            -moz-osx-font-smoothing: grayscale;
         }
-
-        /* Spinner off for number inputs */
         input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type="number"] { -moz-appearance: textfield; }
-
-        .hidden { display: none !important; }
-        .font-small  { font-size: 0.875rem; }
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .font-small { font-size: 0.875rem; }
         .font-medium { font-size: 1rem; }
-        .font-large  { font-size: 1.125rem; }
-
-        /* ─── TOP HEADER BAR ─── */
-        .app-header {
-            background: var(--navy);
-            padding: 0 1rem;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            top: 0;
-            z-index: 40;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .brand-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--gold);
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        #page-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.1rem;
-            color: var(--cream);
-            letter-spacing: 0.01em;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .icon-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 6px;
-            border: none;
-            background: transparent;
-            color: var(--slate);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .icon-btn:hover, .icon-btn:active {
-            background: rgba(255,255,255,0.1);
-            color: var(--cream);
-        }
-
-        /* ─── MAIN CONTENT AREA ─── */
-        .app-body {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-
-        /* ─── WELCOME BANNER ─── */
-        #welcome-message {
-            background: linear-gradient(135deg, var(--navy-mid), var(--navy-light));
-            border-left: 3px solid var(--gold);
-            border-radius: 6px;
-            padding: 0.65rem 1rem;
-            margin-bottom: 1rem;
-            color: var(--cream);
-            font-size: 0.875rem;
-        }
-
-        #welcome-message #user-name { color: var(--gold-light); font-weight: 600; }
-
-        /* ─── CARD ─── */
-        .card {
-            background: var(--white);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            box-shadow: 0 1px 6px rgba(15,30,53,0.07);
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-        }
-
-        .card-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.05rem;
-            color: var(--navy);
-            margin-bottom: 1rem;
-            padding-bottom: 0.6rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-title::before {
-            content: '';
-            width: 3px;
-            height: 16px;
-            background: var(--gold);
-            border-radius: 2px;
-            flex-shrink: 0;
-        }
-
-        /* ─── LABELS & INPUTS ─── */
-        .field-label {
-            display: block;
-            font-size: 0.72rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            color: var(--slate);
-            margin-bottom: 0.4rem;
-        }
-
-        .field-label .req { color: var(--danger); }
-
-        input[type="number"],
-        input[type="text"],
-        select {
-            width: 100%;
-            padding: 0.65rem 0.85rem;
-            border: 1.5px solid var(--border);
-            border-radius: 5px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.95rem;
-            color: var(--navy);
-            background: #fafbfc;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            outline: none;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px rgba(201,168,76,0.13);
-            background: #fff;
-        }
-
-        /* ─── BUTTONS ─── */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 0.65rem 1.1rem;
-            border-radius: 5px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.875rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            letter-spacing: 0.02em;
-        }
-
-        .btn-primary {
-            background: var(--navy);
-            color: var(--cream);
-            flex: 1;
-        }
-        .btn-primary:hover { background: var(--navy-mid); box-shadow: 0 4px 14px rgba(15,30,53,0.3); }
-
-        .btn-gold {
-            background: linear-gradient(135deg, var(--gold), var(--gold-light));
-            color: var(--navy);
-            font-weight: 700;
-            flex: 1;
-        }
-        .btn-gold:hover { box-shadow: 0 4px 14px rgba(201,168,76,0.35); }
-
-        .btn-ghost {
-            background: var(--bg);
-            color: var(--navy);
-            border: 1.5px solid var(--border);
-        }
-        .btn-ghost:hover { border-color: var(--navy); }
-
-        .btn-danger {
-            background: #fee2e2;
-            color: var(--danger);
-        }
-        .btn-danger:hover { background: #fecaca; }
-
-        .btn-success {
-            background: #dcfce7;
-            color: var(--success);
-        }
-        .btn-success:hover { background: #bbf7d0; }
-
-        .btn-sm { padding: 0.45rem 0.75rem; font-size: 0.8rem; }
-
-        /* ─── BACK LINK ─── */
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--gold);
-            font-weight: 600;
-            font-size: 0.875rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.5rem 0;
-            margin-bottom: 1rem;
-            transition: color 0.2s;
-        }
-        .back-link:hover { color: var(--gold-light); }
-
-        /* ─── FIELD GROUP ─── */
-        .field-group { margin-bottom: 0.85rem; }
-
-        .field-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.65rem;
-        }
-
-        .field-row-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr auto;
-            gap: 0.65rem;
-            align-items: end;
-        }
-
-        /* ─── RESULT CARDS ─── */
-        .result-card {
-            border-radius: 7px;
-            padding: 1rem;
-            margin-top: 0.75rem;
-        }
-
-        .result-card-primary {
-            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
-            color: var(--cream);
-        }
-
-        .result-card-gold {
-            background: linear-gradient(135deg, #fef9ec, #fdf3d0);
-            border: 1.5px solid rgba(201,168,76,0.35);
-        }
-
-        .result-card-blue {
-            background: linear-gradient(135deg, #eff6ff, #dbeafe);
-            border: 1.5px solid #bfdbfe;
-        }
-
-        .result-card-red {
-            background: linear-gradient(135deg, #fff5f5, #fee2e2);
-            border: 1.5px solid #fecaca;
-        }
-
-        .result-card-purple {
-            background: linear-gradient(135deg, #faf5ff, #ede9fe);
-            border: 1.5px solid #ddd6fe;
-        }
-
-        .result-card-green {
-            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-            border: 1.5px solid #bbf7d0;
-        }
-
-        .result-card-amber {
-            background: linear-gradient(135deg, #fffbeb, #fef3c7);
-            border: 1.5px solid #fde68a;
-        }
-
-        .result-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-        .result-row:last-child { margin-bottom: 0; }
-
-        .result-label { font-size: 0.83rem; color: #4b5563; }
-        .result-value { font-weight: 700; font-size: 0.95rem; color: var(--navy); }
-        .result-value-lg { font-weight: 800; font-size: 1.35rem; }
-        .result-value-navy { color: var(--navy); }
-        .result-value-gold { color: #92710c; }
-        .result-value-blue { color: #1d4ed8; }
-        .result-value-red { color: #b91c1c; }
-        .result-value-purple { color: #7c3aed; }
-        .result-value-green { color: var(--success); }
-        .result-value-amber { color: #92400e; }
-
-        .result-divider {
-            border: none;
-            border-top: 1px solid rgba(0,0,0,0.08);
-            margin: 0.6rem 0;
-        }
-
-        /* White version for dark card */
-        .result-label-light { font-size: 0.83rem; color: var(--slate); }
-        .result-value-light { font-weight: 700; font-size: 0.95rem; color: var(--cream); }
-        .result-value-lg-light { font-weight: 800; font-size: 1.4rem; color: var(--gold-light); }
-        .result-divider-light { border-top-color: rgba(255,255,255,0.15); }
-
-        /* ─── ADD PURCHASE BUTTON ─── */
-        .add-row-btn {
-            width: 100%;
-            padding: 0.6rem;
-            border: 1.5px dashed rgba(201,168,76,0.5);
-            border-radius: 5px;
-            background: none;
-            color: var(--gold);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.2s;
-            margin-bottom: 0.75rem;
-        }
-        .add-row-btn:hover { background: rgba(201,168,76,0.07); border-color: var(--gold); }
-
-        /* ─── SUMMARY BOX ─── */
-        .summary-box {
-            background: linear-gradient(135deg, #eff6ff, #e0f2fe);
-            border: 1px solid #bae6fd;
-            border-radius: 6px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.75rem;
-        }
-
-        /* ─── SOUFF TOTAL BOX ─── */
-        .taiyar-total-box {
-            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-            border: 1px solid #86efac;
-            border-radius: 6px;
-            padding: 0.75rem 1rem;
-            margin-top: 0.75rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* ─── RECLEANING BOX ─── */
-        .recleaning-box {
-            background: linear-gradient(135deg, #faf5ff, #f3e8ff);
-            border: 1px solid #d8b4fe;
-            border-radius: 6px;
-            padding: 0.85rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .recleaning-box-title {
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            color: #7c3aed;
-            margin-bottom: 0.6rem;
-        }
-
-        /* ─── REMOVE ROW BTN ─── */
-        .remove-btn {
-            width: 38px;
-            height: 38px;
-            background: #fee2e2;
-            color: var(--danger);
-            border: none;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: background 0.2s;
-        }
-        .remove-btn:hover { background: #fecaca; }
-
-        /* ─── EXPORT BAR ─── */
-        .export-bar {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-
-        /* ─── MODALS ─── */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(15,30,53,0.65);
-            z-index: 50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            backdrop-filter: blur(2px);
-        }
-
-        .modal-box {
-            background: var(--white);
-            border-radius: 10px;
-            width: 100%;
-            max-width: 360px;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.35);
-            overflow: hidden;
-        }
-
-        .modal-header {
-            background: var(--navy);
-            padding: 1rem 1.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .modal-header h2 {
-            font-family: 'Playfair Display', serif;
-            color: var(--cream);
-            font-size: 1.1rem;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--slate);
-            font-size: 1.2rem;
-            cursor: pointer;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: color 0.2s, background 0.2s;
-        }
-        .modal-close:hover { color: var(--cream); background: rgba(255,255,255,0.1); }
-
-        .modal-body { padding: 1.25rem; }
-
-        /* ─── MENU ITEMS ─── */
-        .menu-item {
-            width: 100%;
-            padding: 0.85rem 1rem;
-            border: 1.5px solid var(--border);
-            border-radius: 6px;
-            background: #fafbfc;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            margin-bottom: 0.6rem;
-            transition: all 0.2s;
-            text-align: left;
-        }
-        .menu-item:hover {
-            border-color: var(--gold);
-            background: linear-gradient(135deg, #fef9ec, #fffbf0);
-        }
-        .menu-item:last-child { margin-bottom: 0; }
-        .menu-item-name {
-            font-weight: 600;
-            color: var(--navy);
-            font-size: 0.95rem;
-        }
-        .menu-arrow { color: var(--gold); }
-
-        /* ─── SETTINGS SCREEN ─── */
-        .screen {
-            min-height: 100vh;
-            background: var(--bg);
-        }
-
-        .screen-header {
-            background: var(--navy);
-            padding: 0 1rem;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 40;
-        }
-
-        .screen-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.1rem;
-            color: var(--cream);
-        }
-
-        /* ─── HISTORY ITEMS ─── */
-        .history-item {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            transition: border-color 0.2s;
-        }
-        .history-item:hover { border-color: var(--gold); }
-
-        .history-meta h3 {
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: var(--navy);
-        }
-
-        .history-meta p {
-            font-size: 0.78rem;
-            color: var(--slate);
-            margin-top: 2px;
-        }
-
-        .commodity-tag {
-            display: inline-block;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            padding: 2px 8px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, var(--navy), var(--navy-mid));
-            color: var(--gold-light);
-            margin-top: 4px;
-        }
-
-        /* Profile info */
-        .profile-row { margin-bottom: 1rem; }
-        .profile-label {
-            font-size: 0.72rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            color: var(--slate);
-            margin-bottom: 3px;
-        }
-        .profile-value { font-size: 0.95rem; font-weight: 600; color: var(--navy); }
-
-        /* Filter select */
-        #commodity-filter {
-            font-size: 0.875rem;
-            padding: 0.55rem 0.75rem;
-        }
-
-        /* Souff purchase summary */
-        #souff-purchase-summary, #purchase-summary {
-            border-radius: 6px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .souff-purchase-weight,
-        .souff-purchase-price,
-        .purchase-weight,
-        .purchase-price {
-            /* inherits from input above */
-        }
+        .font-large { font-size: 1.125rem; }
     </style>
 </head>
 <body>
-
-<!-- ═══════════════════════════════════════════════════
-     CALCULATOR SCREEN
-═══════════════════════════════════════════════════ -->
-<div id="calculator-screen" class="screen">
-
-    <!-- Header -->
-    <header class="app-header">
-        <div class="header-left">
-            <button id="menu-btn" class="icon-btn" title="Menu">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="4" x2="20" y1="12" y2="12"/>
-                    <line x1="4" x2="20" y1="6" y2="6"/>
-                    <line x1="4" x2="20" y1="18" y2="18"/>
-                </svg>
-            </button>
-            <div class="brand-dot"></div>
-            <h1 id="page-title">Commodity Calculator</h1>
-        </div>
-        <div class="header-right">
-            <button id="profile-btn" class="icon-btn hidden" title="Profile">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                </svg>
-            </button>
-            <button id="history-btn" class="icon-btn" title="History">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                    <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>
-                </svg>
-            </button>
-            <button id="settings-btn" class="icon-btn" title="Settings">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                </svg>
-            </button>
-        </div>
-    </header>
-
-    <div id="calculator-container" class="app-body font-medium">
-
-        <!-- Welcome Message -->
-        <div id="welcome-message" class="hidden">
-            Welcome back, <span id="user-name"></span>! 👋
-        </div>
-
-        <!-- ─── SIMPLE CALCULATOR ─── -->
-        <div id="simple-calculator">
-            <div class="card">
-                <div class="card-title">Quick Calculator</div>
-                <div class="field-group">
-                    <label class="field-label">Purchase Price (₹)</label>
-                    <input type="number" id="purchase-price" placeholder="4200">
-                </div>
-                <div class="field-group">
-                    <label class="field-label">Wastage (%)</label>
-                    <input type="number" id="wastage-percent" placeholder="5" step="0.1">
-                </div>
-                <div class="field-row" style="gap:0.5rem; margin-top:0.25rem;">
-                    <button id="calculate-simple" class="btn btn-gold">Calculate</button>
-                    <button id="reset-simple" class="btn btn-ghost">Reset</button>
+    <!-- Calculator Screen -->
+    <div id="calculator-screen" class="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 p-4">
+        <div id="calculator-container" class="max-w-md mx-auto font-medium">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-2">
+                        <button id="menu-btn" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="4" x2="20" y1="12" y2="12"/>
+                                <line x1="4" x2="20" y1="6" y2="6"/>
+                                <line x1="4" x2="20" y1="18" y2="18"/>
+                            </svg>
+                        </button>
+                        <h1 id="page-title" class="text-2xl font-bold text-gray-800">Commodity Calculator</h1>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="history-btn" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="History">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                <path d="M3 3v5h5"/>
+                                <path d="M12 7v5l4 2"/>
+                            </svg>
+                        </button>
+                        <button id="settings-btn" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Settings">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Simple Result -->
-                <div id="simple-result" class="hidden">
-                    <div class="result-card result-card-primary" style="margin-top:1rem;">
-                        <div class="result-row">
-                            <span class="result-label-light">Purchase Price</span>
-                            <span id="result-purchase-price" class="result-value-light">₹0.00</span>
+                <!-- Simple Calculator Form -->
+                <div id="simple-calculator">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Price (₹)</label>
+                            <input type="number" id="purchase-price" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-lg" placeholder="4200">
                         </div>
-                        <hr class="result-divider result-divider-light">
-                        <div class="result-row">
-                            <span class="result-label-light" style="font-weight:600;">Total Costing</span>
-                            <span id="result-total-costing" class="result-value-lg-light">₹0.00</span>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Wastage (%)</label>
+                            <input type="number" id="wastage-percent" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-lg" placeholder="5" step="0.1">
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button id="calculate-simple" class="flex-1 bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors">
+                                Calculate
+                            </button>
+                            <button id="reset-simple" class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                                Reset
+                            </button>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- ─── SOUFF CALCULATOR ─── -->
-        <div id="souff-calculator-section" class="hidden">
-            <button id="back-to-main-souff" class="back-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-                </svg>
-                Back to Main
-            </button>
-
-            <!-- Purchase Details -->
-            <div class="card">
-                <div class="card-title">Purchase Details</div>
-                <div id="souff-purchase-rows-container">
-                    <div class="souff-purchase-row" style="margin-bottom:0.65rem;">
-                        <div class="field-row">
-                            <div>
-                                <label class="field-label">Weight (kg)</label>
-                                <input type="number" class="souff-purchase-weight" placeholder="1000">
+                    <!-- Simple Result -->
+                    <div id="simple-result" class="mt-6 bg-gradient-to-r from-orange-100 to-amber-100 rounded-lg p-6 border-2 border-orange-200 hidden">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Result</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600">Purchase Price:</span>
+                                <span id="result-purchase-price" class="font-semibold text-gray-800">₹0.00</span>
                             </div>
-                            <div>
-                                <label class="field-label">Price (₹/20kg)</label>
-                                <input type="number" class="souff-purchase-price" placeholder="4200">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button id="souff-add-purchase-row" class="add-row-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    Add Purchase
-                </button>
-                <div id="souff-purchase-summary" class="summary-box hidden">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-size:0.83rem;color:#0369a1;font-weight:600;">Total Purchase Weight</span>
-                        <span id="souff-summary-total-weight" style="font-weight:800;color:#0c4a6e;font-size:1rem;">0 kg</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Box Weights -->
-            <div class="card">
-                <div class="card-title">Box Weights (Taiyar)</div>
-                <div class="field-row" style="margin-bottom:0.65rem;">
-                    <div>
-                        <label class="field-label">1. Jado Mal (kg)</label>
-                        <input type="number" id="souff-box-jado-mal" class="souff-box-weight" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="field-label">2. Recleaning (kg)</label>
-                        <input type="number" id="souff-box-recleaning" class="souff-box-weight" placeholder="0">
-                    </div>
-                </div>
-                <div class="field-row" style="margin-bottom:0.65rem;">
-                    <div>
-                        <label class="field-label">3. Recleaning Barik (kg)</label>
-                        <input type="number" id="souff-box-recleaning-barik" class="souff-box-weight" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="field-label">4. Mini Jado Mal (kg)</label>
-                        <input type="number" id="souff-box-mini-jado-mal" class="souff-box-weight" placeholder="0">
-                    </div>
-                </div>
-                <div class="field-row" style="margin-bottom:0.65rem;">
-                    <div>
-                        <label class="field-label">5. 1 Number Barik (kg)</label>
-                        <input type="number" id="souff-box-1-number-barik" class="souff-box-weight" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="field-label">6. 2 Number Barik (kg)</label>
-                        <input type="number" id="souff-box-2-number-barik" class="souff-box-weight" placeholder="0">
-                    </div>
-                </div>
-                <div class="field-row" style="margin-bottom:0.65rem;">
-                    <div>
-                        <label class="field-label">7. Surbhi (kg)</label>
-                        <input type="number" id="souff-box-surbhi" class="souff-box-weight" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="field-label">8. Kacho Jado Mal (kg)</label>
-                        <input type="number" id="souff-box-kacho-jado-mal" class="souff-box-weight" placeholder="0">
-                    </div>
-                </div>
-                <div class="taiyar-total-box">
-                    <span style="font-weight:600;font-size:0.9rem;color:#166534;">Total Taiyar Weight</span>
-                    <span id="souff-total-taiyar-weight" style="font-weight:800;font-size:1.2rem;color:#15803d;">0 kg</span>
-                </div>
-            </div>
-
-            <!-- Buttons -->
-            <div class="field-row" style="gap:0.5rem;margin-bottom:0.75rem;">
-                <button id="souff-calculate" class="btn btn-gold" style="font-size:0.9rem;padding:0.75rem 1rem;">Calculate Wastage</button>
-                <button id="souff-reset" class="btn btn-ghost">Reset</button>
-            </div>
-
-            <!-- Souff Result -->
-            <div id="souff-result" class="hidden">
-                <div class="result-card result-card-red">
-                    <div style="font-weight:700;font-size:0.85rem;color:#7f1d1d;margin-bottom:0.6rem;text-transform:uppercase;letter-spacing:0.06em;">Wastage</div>
-                    <div class="result-row">
-                        <span class="result-label">Wastage Weight</span>
-                        <span id="souff-result-wastage-weight" class="result-value result-value-red result-value-lg">0 kg</span>
-                    </div>
-                    <div class="result-row">
-                        <span class="result-label">Wastage %</span>
-                        <span id="souff-result-wastage-percent" class="result-value result-value-red">0%</span>
-                    </div>
-                </div>
-                <div class="result-card result-card-blue" style="margin-top:0.5rem;">
-                    <div class="result-row">
-                        <span class="result-label">Purchase Weight</span>
-                        <span id="souff-result-purchase-weight" class="result-value result-value-blue">0 kg</span>
-                    </div>
-                    <div class="result-row">
-                        <span class="result-label">Taiyar Weight</span>
-                        <span id="souff-result-taiyar-weight" class="result-value result-value-blue">0 kg</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Souff Export -->
-            <div id="souff-export-section" class="export-bar hidden">
-                <button id="souff-export-pdf" class="btn btn-danger btn-sm" style="flex:1;">📄 Export PDF</button>
-                <button id="souff-save-history" class="btn btn-success btn-sm" style="flex:1;">💾 Save</button>
-            </div>
-        </div>
-
-        <!-- ─── COMMODITY CALCULATOR (Jeera, Ajwain, Isabgul) ─── -->
-        <div id="commodity-calculator" class="hidden">
-            <button id="back-to-main" class="back-link">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-                </svg>
-                Back to Main
-            </button>
-
-            <div class="card">
-                <div class="card-title">Purchase Details</div>
-
-                <div id="purchase-rows-container">
-                    <div class="purchase-row" style="margin-bottom:0.65rem;">
-                        <div class="field-row">
-                            <div>
-                                <label class="field-label">Weight (kg)</label>
-                                <input type="number" class="purchase-weight" placeholder="1000">
-                            </div>
-                            <div>
-                                <label class="field-label">Price (₹/20kg)</label>
-                                <input type="number" class="purchase-price" placeholder="4200">
+                            <div class="border-t-2 border-orange-300 pt-3 flex justify-between items-center">
+                                <span class="text-gray-700 font-semibold">Total Costing:</span>
+                                <span id="result-total-costing" class="text-2xl font-bold text-orange-600">₹0.00</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <button id="add-purchase-row" class="add-row-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    Add Purchase
-                </button>
+                <!-- Commodity Calculator (Hidden initially) -->
+                <div id="commodity-calculator" class="hidden">
+                    <!-- Back Button -->
+                    <button id="back-to-main" class="mb-4 flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Back to Main
+                    </button>
 
-                <div id="purchase-summary" class="summary-box hidden">
-                    <div class="result-row" style="margin-bottom:0.3rem;">
-                        <span style="font-size:0.83rem;color:#0369a1;">Total Weight</span>
-                        <span id="summary-total-weight" style="font-weight:700;color:#0c4a6e;">0 kg</span>
-                    </div>
-                    <div class="result-row" style="margin-bottom:0;">
-                        <span style="font-size:0.83rem;color:#0369a1;">Weighted Avg Price</span>
-                        <span id="summary-avg-price" style="font-weight:700;color:#0c4a6e;">₹0.00</span>
-                    </div>
-                </div>
-
-                <div class="field-group">
-                    <label class="field-label">Taiyar Weight (kg) <span class="req">*</span></label>
-                    <input type="number" id="taiyar-weight" placeholder="950">
-                </div>
-
-                <!-- Recleaning -->
-                <div class="recleaning-box">
-                    <div class="recleaning-box-title">Recleaning — Optional (for 1 Number Costing)</div>
-                    <div class="field-row">
+                    <div class="space-y-4">
                         <div>
-                            <label class="field-label">Weight (kg)</label>
-                            <input type="number" id="recleaning-weight" placeholder="100">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Weight (kg)</label>
+                            <input type="number" id="purchase-weight" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-lg" placeholder="1000">
                         </div>
+
                         <div>
-                            <label class="field-label">Price (₹/20kg)</label>
-                            <input type="number" id="recleaning-price" placeholder="300">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Price per 20 kg (₹)</label>
+                            <input type="number" id="price-per-twenty" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-lg" placeholder="4200">
                         </div>
-                    </div>
-                </div>
 
-                <div class="field-row" style="gap:0.5rem;">
-                    <button id="calculate-mix" class="btn btn-gold">Calculate</button>
-                    <button id="reset-mix" class="btn btn-ghost">Reset</button>
-                </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Taiyar Weight (kg)</label>
+                            <input type="number" id="taiyar-weight" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-lg" placeholder="950">
+                        </div>
 
-                <!-- Mix Result -->
-                <div id="mix-result" class="hidden">
-                    <div class="result-card result-card-amber" style="margin-top:0.75rem;">
-                        <div class="result-row">
-                            <span class="result-label" style="font-weight:600;">Wastage</span>
-                            <span class="result-value result-value-amber">
-                                <span id="result-wastage-weight">0</span> kg
-                                (<span id="result-wastage-percent">0</span>%)
-                            </span>
+                        <div class="flex gap-2">
+                            <button id="calculate-mix" class="flex-1 bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors">
+                                Calculate
+                            </button>
+                            <button id="reset-mix" class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                                Reset
+                            </button>
                         </div>
                     </div>
 
-                    <div id="aakho-palo-result" class="result-card result-card-blue" style="margin-top:0.5rem;">
-                        <div class="result-row">
-                            <span class="result-label">Aakho Palo Costing (per 20kg)</span>
-                            <span id="result-aakho-palo" class="result-value result-value-blue result-value-lg">₹0.00</span>
+                    <!-- Mix Result -->
+                    <div id="mix-result" class="mt-6 space-y-4 hidden">
+                        <div class="bg-gradient-to-r from-blue-100 to-cyan-100 rounded-lg p-6 border-2 border-blue-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700 font-semibold text-lg">Aakho Palo Costing (per 20kg):</span>
+                                <span id="result-aakho-palo" class="text-2xl font-bold text-blue-600">₹0.00</span>
+                            </div>
                         </div>
-                    </div>
 
-                    <div id="one-number-result" class="result-card result-card-purple hidden" style="margin-top:0.5rem;">
-                        <div class="result-row">
-                            <span class="result-label">1 Number Costing (per 20kg)</span>
-                            <span id="result-one-number" class="result-value result-value-purple result-value-lg">₹0.00</span>
+                        <!-- Export Buttons -->
+                        <div class="flex gap-2">
+                            <button id="export-mix-pdf" class="flex-1 bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors text-sm">
+                                📄 Export PDF
+                            </button>
+                            <button id="save-mix-history" class="flex-1 bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm">
+                                💾 Save to History
+                            </button>
                         </div>
                     </div>
                 </div>
-
-                <!-- Export -->
-                <div id="mix-export-section" class="export-bar hidden">
-                    <button id="export-mix-pdf" class="btn btn-danger btn-sm" style="flex:1;">📄 Export PDF</button>
-                    <button id="save-mix-history" class="btn btn-success btn-sm" style="flex:1;">💾 Save</button>
-                </div>
-            </div>
-        </div>
-
-    </div><!-- end app-body -->
-</div><!-- end calculator-screen -->
-
-
-<!-- ═══════════════════════════════════════════════════
-     SETTINGS SCREEN
-═══════════════════════════════════════════════════ -->
-<div id="settings-screen" class="screen hidden">
-    <header class="screen-header">
-        <span class="screen-title">Settings</span>
-        <button id="close-settings" class="icon-btn" style="color:var(--slate);">✕</button>
-    </header>
-    <div class="app-body">
-        <div class="card">
-            <div class="card-title">Preferences</div>
-            <div class="field-group">
-                <label class="field-label">Default Expenses (₹)</label>
-                <input type="number" id="default-expenses" placeholder="150" value="150">
-            </div>
-            <div class="field-group">
-                <label class="field-label">Font Size</label>
-                <select id="font-size">
-                    <option value="small">Small</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="large">Large</option>
-                </select>
-            </div>
-            <button id="save-settings" class="btn btn-gold" style="width:100%;padding:0.75rem;margin-top:0.25rem;">Save Settings</button>
-        </div>
-    </div>
-</div>
-
-
-<!-- ═══════════════════════════════════════════════════
-     HISTORY SCREEN
-═══════════════════════════════════════════════════ -->
-<div id="history-screen" class="screen hidden">
-    <header class="screen-header">
-        <span class="screen-title">Calculation History</span>
-        <div style="display:flex;align-items:center;gap:0.5rem;">
-            <button id="clear-history" class="btn btn-danger btn-sm">Clear All</button>
-            <button id="close-history" class="icon-btn" style="color:var(--slate);">✕</button>
-        </div>
-    </header>
-    <div class="app-body">
-        <div id="commodity-filter-container" class="field-group">
-            <label class="field-label">Filter by Commodity</label>
-            <select id="commodity-filter">
-                <option value="all">All Commodities</option>
-                <option value="simple">Simple Calculator</option>
-                <option value="jeera">Jeera (Cumin)</option>
-                <option value="souff">Souff (Fennel)</option>
-                <option value="ajwain">Ajwain</option>
-                <option value="isabgul">Isabgul</option>
-            </select>
-        </div>
-
-        <div id="history-list"></div>
-
-        <div id="history-empty" class="text-center" style="padding:3rem 1rem;color:var(--slate);">
-            <svg style="margin:0 auto 1rem;display:block;opacity:0.35;" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>
-            </svg>
-            <p style="font-size:1rem;font-weight:600;color:var(--navy);">No saved calculations yet</p>
-            <p style="font-size:0.83rem;margin-top:0.4rem;">Save your calculations to view them here</p>
-        </div>
-    </div>
-</div>
-
-
-<!-- ═══════════════════════════════════════════════════
-     NAME/VAKAL MODAL
-═══════════════════════════════════════════════════ -->
-<div id="name-modal" class="modal-backdrop hidden">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h2>Enter Name / Vakal</h2>
-            <button id="cancel-name" class="modal-close">✕</button>
-        </div>
-        <div class="modal-body">
-            <div class="field-group">
-                <label class="field-label">Name or Vakal</label>
-                <input type="text" id="name-vakal-input" placeholder="Enter name or vakal">
-            </div>
-            <div class="field-row" style="gap:0.5rem;margin-top:0.25rem;">
-                <button type="button" id="confirm-name" class="btn btn-gold" style="flex:1;">Save</button>
             </div>
         </div>
     </div>
-</div>
 
-
-<!-- ═══════════════════════════════════════════════════
-     MENU MODAL
-═══════════════════════════════════════════════════ -->
-<div id="menu-modal" class="modal-backdrop hidden">
-    <div class="modal-box" style="max-width:340px;">
-        <div class="modal-header">
-            <h2>Select Commodity</h2>
-            <button id="close-menu" class="modal-close">✕</button>
-        </div>
-        <div class="modal-body">
-            <button class="menu-item commodity-item" data-commodity="jeera">
-                <span class="menu-item-name">Jeera (Cumin)</span>
-                <span class="menu-arrow">›</span>
-            </button>
-            <button class="menu-item commodity-item" data-commodity="souff">
-                <span class="menu-item-name">Souff (Fennel)</span>
-                <span class="menu-arrow">›</span>
-            </button>
-            <button class="menu-item commodity-item" data-commodity="ajwain">
-                <span class="menu-item-name">Ajwain</span>
-                <span class="menu-arrow">›</span>
-            </button>
-            <button class="menu-item commodity-item" data-commodity="isabgul">
-                <span class="menu-item-name">Isabgul</span>
-                <span class="menu-arrow">›</span>
-            </button>
-        </div>
-    </div>
-</div>
-
-
-<!-- ═══════════════════════════════════════════════════
-     PROFILE MODAL
-═══════════════════════════════════════════════════ -->
-<div id="profile-modal" class="modal-backdrop hidden">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h2>Profile</h2>
-            <button id="close-profile" class="modal-close">✕</button>
-        </div>
-        <div class="modal-body">
-            <div class="profile-row">
-                <div class="profile-label">Email</div>
-                <div id="profile-email" class="profile-value"></div>
-            </div>
-            <div class="profile-row">
-                <div class="profile-label">Display Name</div>
-                <div id="profile-display-name" class="profile-value"></div>
-            </div>
-            <div class="profile-row">
-                <div class="profile-label">Member Since</div>
-                <div id="profile-created" class="profile-value" style="font-size:0.875rem;font-weight:400;color:var(--slate);"></div>
-            </div>
-
-            <!-- ── SUBSCRIPTION BADGE ── -->
-            <div style="margin-top:0.75rem;">
-
-                <!-- PREMIUM badge -->
-                <div id="profile-badge-premium" class="hidden" style="
-                    background: linear-gradient(135deg, #f59e0b, #d97706);
-                    border-radius: 8px; padding: 0.85rem 1rem;
-                    display: flex; align-items: center; justify-content: space-between;
-                    box-shadow: 0 0 12px rgba(245,158,11,0.35);">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <span style="font-size:1.6rem;">💎</span>
-                        <div>
-                            <div style="font-weight:700;color:#fff;font-size:0.95rem;letter-spacing:0.05em;">PREMIUM</div>
-                            <div style="color:rgba(255,255,255,0.8);font-size:0.72rem;">Unlimited access</div>
-                        </div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="color:rgba(255,255,255,0.7);font-size:0.68rem;text-transform:uppercase;">Valid until</div>
-                        <div id="profile-expiry" style="color:#fff;font-weight:700;font-size:0.82rem;margin-top:1px;">—</div>
-                        <div id="profile-days-left" style="color:rgba(255,255,255,0.75);font-size:0.68rem;margin-top:1px;"></div>
-                    </div>
+    <!-- Settings Screen -->
+    <div id="settings-screen" class="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 p-4 hidden">
+        <div class="max-w-md mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Settings</h2>
+                    <button id="close-settings" class="text-gray-600 hover:text-gray-800 text-2xl">✕</button>
                 </div>
 
-                <!-- FREE badge -->
-                <div id="profile-badge-free" class="hidden" style="
-                    background: var(--bg); border: 1.5px solid var(--border);
-                    border-radius: 8px; padding: 0.85rem 1rem;
-                    display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <span style="font-size:1.4rem;">🆓</span>
-                        <div>
-                            <div style="font-weight:600;color:var(--navy);font-size:0.9rem;">Free Plan</div>
-                            <div id="profile-calcs-left" style="color:var(--slate);font-size:0.72rem;"></div>
-                        </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Default Expenses (₹)</label>
+                        <input type="number" id="default-expenses" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-lg" placeholder="150" value="150">
                     </div>
-                    <button onclick="document.getElementById('profile-modal').classList.add('hidden'); PremiumSystem.showUpgradePopup();"
-                        style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;
-                               border-radius:6px;padding:0.4rem 0.75rem;font-size:0.75rem;font-weight:700;cursor:pointer;">
-                        💎 Upgrade
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
+                        <select id="font-size" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-lg">
+                            <option value="small">Small</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="large">Large</option>
+                        </select>
+                    </div>
+
+                    <button id="save-settings" class="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors">
+                        Save Settings
                     </button>
                 </div>
-
-            </div>
-            <!-- ── END SUBSCRIPTION BADGE ── -->
-
-            <div style="padding-top:1rem;border-top:1px solid var(--border);margin-top:0.75rem;">
-                <button id="logout-btn" class="btn btn-danger" style="width:100%;justify-content:center;">Logout</button>
             </div>
         </div>
     </div>
-</div>
 
-
-<!-- ═══════════════════════════════════════════════════
-     MAINTENANCE CHECK — RUNS FIRST BEFORE ALL SCRIPTS
-═══════════════════════════════════════════════════ -->
-<script>
-(async function() {
-    try {
-        const res = await fetch('https://commodity-calculator-api.onrender.com/api/user/maintenance-status', {
-            cache: 'no-store'
-        });
-        const data = await res.json();
-        console.log('Maintenance:', data);
-
-        if (data.maintenance_mode === true) {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (user.is_admin) return;
-
-            // DOMContentLoaded already fired, replace directly
-            document.body.innerHTML = `
-                <div style="font-family:'DM Sans',sans-serif;min-height:100vh;background:#0f1e35;
-                            display:flex;align-items:center;justify-content:center;padding:2rem;">
-                    <div style="background:white;border-radius:20px;padding:3rem 2.5rem;
-                                max-width:420px;width:100%;text-align:center;
-                                box-shadow:0 24px 64px rgba(0,0,0,0.4);">
-                        <div style="font-size:4.5rem;margin-bottom:1.25rem;">🔧</div>
-                        <h1 style="font-size:1.6rem;font-weight:700;color:#0f1e35;margin-bottom:0.6rem;">
-                            Under Maintenance
-                        </h1>
-                        <p style="color:#8a99aa;font-size:0.95rem;line-height:1.6;margin-bottom:1.5rem;">
-                            ${data.message || "We're working on some improvements. We'll be back shortly!"}
-                        </p>
-                        <div style="background:#f4f6f9;border-radius:10px;padding:0.75rem 1rem;
-                                    font-size:0.8rem;color:#8a99aa;border:1px solid #e2e8f0;">
-                            🌾 Commodity Calculator
-                        </div>
+    <!-- History Screen -->
+    <div id="history-screen" class="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 p-4 hidden">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Calculation History</h2>
+                    <div class="flex gap-2">
+                        <button id="clear-history" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm">
+                            Clear All
+                        </button>
+                        <button id="close-history" class="text-gray-600 hover:text-gray-800 text-2xl">✕</button>
                     </div>
-                </div>`;
-        }
-    } catch (err) {
-        console.log('Maintenance check failed, allowing access:', err.message);
-    }
-})();
-</script>
+                </div>
 
-<!-- All other scripts load AFTER maintenance check -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="js/api.js"></script>
-<script src="js/calculator.js"></script>
-<script src="js/premium_popup.js"></script>
-<script src="js/app.js"></script>
+                <!-- Commodity Filter -->
+                <div id="commodity-filter-container" class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Commodity:</label>
+                    <select id="commodity-filter" class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none">
+                        <option value="all">All Commodities</option>
+                        <option value="simple">Simple Calculator</option>
+                        <option value="jeera">Jeera (Cumin)</option>
+                        <option value="souff">Souff (Fennel)</option>
+                        <option value="ajwain">Ajwain</option>
+                        <option value="isabgul">Isabgul</option>
+                    </select>
+                </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        if (!requireAuth()) return;
+                <!-- History List -->
+                <div id="history-list" class="space-y-4">
+                    <!-- History items will be added here dynamically -->
+                </div>
 
-        const user = API.getCurrentUser();
-        if (user) {
-            document.getElementById('welcome-message').classList.remove('hidden');
-            document.getElementById('user-name').textContent = user.display_name || user.email;
-            document.getElementById('profile-btn').classList.remove('hidden');
-        }
+                <!-- Empty State -->
+                <div id="history-empty" class="text-center py-12 text-gray-500">
+                    <svg class="mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                        <path d="M12 7v5l4 2"/>
+                    </svg>
+                    <p class="text-lg">No saved calculations yet</p>
+                    <p class="text-sm mt-2">Save your calculations to view them here</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        await Calculator.init();
-    });
-</script>
+    <!-- Name/Vakal Input Modal -->
+    <div id="name-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full">
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Enter Name/Vakal</h3>
+                <input type="text" id="name-vakal-input" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-lg mb-4" placeholder="Enter name or vakal">
+                <div class="flex gap-2">
+                    <button id="cancel-name" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="confirm-name" class="flex-1 bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Menu Modal -->
+    <div id="menu-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h2 class="text-2xl font-bold text-gray-800">Select Commodity</h2>
+                <button id="close-menu" class="text-gray-600 hover:text-gray-800 text-2xl">✕</button>
+            </div>
+            <div class="p-4">
+                <button class="commodity-item w-full text-left px-6 py-4 rounded-lg hover:bg-orange-50 transition-colors mb-2 border-2 border-gray-200 hover:border-orange-300" data-commodity="jeera">
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-semibold text-gray-800">Jeera (Cumin)</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </div>
+                </button>
+                <button class="commodity-item w-full text-left px-6 py-4 rounded-lg hover:bg-orange-50 transition-colors mb-2 border-2 border-gray-200 hover:border-orange-300" data-commodity="souff">
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-semibold text-gray-800">Souff (Fennel)</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </div>
+                </button>
+                <button class="commodity-item w-full text-left px-6 py-4 rounded-lg hover:bg-orange-50 transition-colors mb-2 border-2 border-gray-200 hover:border-orange-300" data-commodity="ajwain">
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-semibold text-gray-800">Ajwain</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </div>
+                </button>
+                <button class="commodity-item w-full text-left px-6 py-4 rounded-lg hover:bg-orange-50 transition-colors border-2 border-gray-200 hover:border-orange-300" data-commodity="isabgul">
+                    <div class="flex items-center justify-between">
+                        <span class="text-lg font-semibold text-gray-800">Isabgul</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Cordova and App Scripts -->
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/calculator.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
 </body>
 </html>

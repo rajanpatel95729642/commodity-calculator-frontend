@@ -615,8 +615,10 @@ async function calculateSimple() {
     // Display result
     document.getElementById('result-purchase-price').textContent = '₹' + result.purchasePrice;
     document.getElementById('result-total-costing').textContent = '₹' + result.totalCosting;
-    document.getElementById('result-expenses-row').style.display = includeExpenses ? 'flex' : 'none';
-    document.getElementById('result-expenses').textContent = '₹' + result.expenses;
+    const expensesRow = document.getElementById('result-expenses-row');
+    const expensesEl = document.getElementById('result-expenses');
+    if (expensesRow) expensesRow.style.display = includeExpenses ? 'flex' : 'none';
+    if (expensesEl) expensesEl.textContent = '₹' + result.expenses;
     document.getElementById('simple-result').classList.remove('hidden');
     await PremiumSystem.incrementUsage();
 }
