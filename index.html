@@ -666,6 +666,30 @@
                     <label class="field-label">Wastage (%)</label>
                     <input type="number" id="wastage-percent" placeholder="5" step="0.1">
                 </div>
+
+                <!-- Expense Toggle -->
+                <div style="display:flex;align-items:center;justify-content:space-between;
+                            background:#f4f6f9;border:1.5px solid var(--border);border-radius:6px;
+                            padding:0.6rem 0.85rem;margin-bottom:0.85rem;">
+                    <div>
+                        <div style="font-size:0.8rem;font-weight:600;color:var(--navy);">Include Default Expenses</div>
+                        <div id="expense-toggle-label" style="font-size:0.72rem;color:var(--slate);">₹<span id="expense-toggle-value">150</span> will be added</div>
+                    </div>
+                    <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;">
+                        <input type="checkbox" id="include-expenses-toggle" checked
+                            style="opacity:0;width:0;height:0;position:absolute;">
+                        <span id="toggle-track" style="
+                            position:absolute;inset:0;border-radius:24px;
+                            background:var(--gold);transition:background 0.2s;"></span>
+                        <span id="toggle-thumb" style="
+                            position:absolute;top:3px;left:3px;
+                            width:18px;height:18px;border-radius:50%;
+                            background:#fff;transition:transform 0.2s;
+                            transform:translateX(20px);
+                            box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
+                    </label>
+                </div>
+
                 <div class="field-row" style="gap:0.5rem; margin-top:0.25rem;">
                     <button id="calculate-simple" class="btn btn-gold">Calculate</button>
                     <button id="reset-simple" class="btn btn-ghost">Reset</button>
@@ -677,6 +701,10 @@
                         <div class="result-row">
                             <span class="result-label-light">Purchase Price</span>
                             <span id="result-purchase-price" class="result-value-light">₹0.00</span>
+                        </div>
+                        <div id="result-expenses-row" class="result-row">
+                            <span class="result-label-light">Expenses</span>
+                            <span id="result-expenses" class="result-value-light">₹0.00</span>
                         </div>
                         <hr class="result-divider result-divider-light">
                         <div class="result-row">
@@ -1182,6 +1210,27 @@
         }
 
         await Calculator.init();
+
+        // Update toggle label with actual default expenses
+        document.getElementById('expense-toggle-value').textContent = Calculator.getDefaultExpenses();
+
+        // Toggle logic
+        const toggle = document.getElementById('include-expenses-toggle');
+        const track = document.getElementById('toggle-track');
+        const thumb = document.getElementById('toggle-thumb');
+        const label = document.getElementById('expense-toggle-label');
+
+        toggle.addEventListener('change', function() {
+            if (this.checked) {
+                track.style.background = 'var(--gold)';
+                thumb.style.transform = 'translateX(20px)';
+                label.innerHTML = '₹<span id="expense-toggle-value">' + Calculator.getDefaultExpenses() + '</span> will be added';
+            } else {
+                track.style.background = '#cbd5e1';
+                thumb.style.transform = 'translateX(0px)';
+                label.innerHTML = 'Expenses not included';
+            }
+        });
     });
 </script>
 
