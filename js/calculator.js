@@ -121,21 +121,20 @@ const Calculator = {
             wastagePercent: wastagePercent.toFixed(2)
         };
 
-        // Calculate Aakho Palo Costing if costing mode is ON
-        if (includeCosting && hasPrices && totalTaiyarWeight > 0) {
-            const exp = parseFloat(this.defaultExpenses);
-            const avgPrice = (weightedSum / totalPurchaseWeight) * 20;
-            const beforeCleaningCosting = avgPrice + exp;
-            const aakhoPaloCosting = (((beforeCleaningCosting * totalPurchaseWeight) / 20) / totalTaiyarWeight) * 20;
+        // ⭐ Calculate Aakho Palo Costing using approxPrice
+    if (includeCosting && approxPrice && totalTaiyarWeight > 0) {
+        const exp = parseFloat(this.defaultExpenses);
+        const beforeCleaningCosting = approxPrice + exp;
+        const aakhoPaloCosting = (((beforeCleaningCosting * totalPurchaseWeight) / 20) / totalTaiyarWeight) * 20;
 
-            result.avgPrice = avgPrice.toFixed(2);
-            result.beforeCleaningCosting = beforeCleaningCosting.toFixed(2);
-            result.aakhoPaloCosting = aakhoPaloCosting.toFixed(2);
-            result.includeCosting = true;
-        }
+        result.approxPrice = approxPrice.toFixed(2);
+        result.beforeCleaningCosting = beforeCleaningCosting.toFixed(2);
+        result.aakhoPaloCosting = aakhoPaloCosting.toFixed(2);
+        result.includeCosting = true;
+    }
 
-        return result;
-    },
+    return result;
+},
 
     // Combined Calculator Method (For Jeera, Ajwain, Isabgul)
     calculateCombinedMultiple: function(purchases, taiyarWeight, recleaningWeight, recleaningPrice) {

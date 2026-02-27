@@ -69,6 +69,7 @@ function setupSouffCostingToggle() {
     const toggle = document.getElementById('souff-costing-toggle');
     const track = document.getElementById('souff-costing-track');
     const thumb = document.getElementById('souff-costing-thumb');
+    const priceBox = document.getElementById('souff-approx-price-box');
 
     if (!toggle) return;
 
@@ -76,9 +77,11 @@ function setupSouffCostingToggle() {
         if (this.checked) {
             track.style.background = 'var(--gold)';
             thumb.style.transform = 'translateX(20px)';
+            priceBox.classList.remove('hidden');
         } else {
             track.style.background = '#cbd5e1';
             thumb.style.transform = 'translateX(0px)';
+            priceBox.classList.add('hidden');
             // Hide costing result if toggle turned off
             const costingResult = document.getElementById('souff-costing-result');
             if (costingResult) costingResult.classList.add('hidden');
@@ -465,11 +468,12 @@ async function calculateSouff() {
         return;
     }
 
-    // If costing is ON, validate that prices are entered
+    // ⭐ Get approximate price if toggle ON
+    let approxPrice = null;
     if (includeCosting) {
-        const hasPrices = purchases.some(p => p.price > 0);
-        if (!hasPrices) {
-            alert('Please enter purchase prices for costing calculation');
+        approxPrice = parseFloat(document.getElementById('souff-approx-price').value);
+        if (isNaN(approxPrice) || approxPrice <= 0) {
+            alert('Please enter approximate price for costing calculation');
             return;
         }
     }
@@ -537,6 +541,8 @@ function resetSouff() {
     const toggle = document.getElementById('souff-costing-toggle');
     const track = document.getElementById('souff-costing-track');
     const thumb = document.getElementById('souff-costing-thumb');
+    document.getElementById('souff-approx-price').value = '';
+    document.getElementById('souff-approx-price-box').classList.add('hidden');
     if (toggle) {
         toggle.checked = false;
         track.style.background = '#cbd5e1';
@@ -570,7 +576,7 @@ async function saveSouffToHistory(nameVakal) {
 
     // Save costing data if available
     if (includeCosting && result.aakhoPaloCosting) {
-        saveData.avgPrice = result.avgPrice;
+        saveData.approxPrice = result.approxPrice;
         saveData.aakhoPaloCosting = result.aakhoPaloCosting;
         saveData.includeCosting = true;
     }

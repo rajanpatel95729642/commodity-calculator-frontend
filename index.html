@@ -810,7 +810,7 @@
             <!-- Costing Toggle -->
             <div style="display:flex;align-items:center;justify-content:space-between;
                         background:#f4f6f9;border:1.5px solid var(--border);border-radius:6px;
-                        padding:0.6rem 0.85rem;margin-bottom:0.85rem;">
+                        padding:0.6rem 0.85rem;margin-bottom:0.65rem;">
                 <div>
                     <div style="font-size:0.8rem;font-weight:600;color:var(--navy);">Include Aakho Palo Costing</div>
                     <div style="font-size:0.72rem;color:var(--slate);">Toggle ON to calculate costing</div>
@@ -828,6 +828,16 @@
                         transform:translateX(0px);
                         box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
                 </label>
+            </div>
+
+            <!-- ⭐ NEW: Approximate Price Input (shows only when toggle ON) -->
+            <div id="souff-approx-price-box" class="hidden" style="margin-bottom:0.85rem;">
+                <div style="background:linear-gradient(135deg,#fef9ec,#fdf3d0);border:1.5px solid rgba(201,168,76,0.4);border-radius:6px;padding:0.85rem;">
+                    <div class="field-group" style="margin-bottom:0;">
+                        <label class="field-label">Approximate Price (₹/20kg)</label>
+                        <input type="number" id="souff-approx-price" placeholder="4200">
+                    </div>
+                </div>
             </div>
 
             <!-- Buttons -->
