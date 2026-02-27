@@ -1184,7 +1184,8 @@
         await Calculator.init();
         
         // Update toggle label with actual default expenses
-        document.getElementById('expense-toggle-value').textContent = Calculator.getDefaultExpenses();
+        const toggleValueEl = document.getElementById('expense-toggle-value');
+        if (toggleValueEl) toggleValueEl.textContent = Calculator.getDefaultExpenses();
 
         // Toggle logic
         const toggle = document.getElementById('include-expenses-toggle');

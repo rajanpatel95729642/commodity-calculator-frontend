@@ -577,7 +577,8 @@ async function calculateSimple() {
     const allowed = await PremiumSystem.canCalculate();
     if (!allowed) return;
     
-    const includeExpenses = document.getElementById('include-expenses-toggle').checked;
+    const toggleEl = document.getElementById('include-expenses-toggle');
+    const includeExpenses = toggleEl ? toggleEl.checked : true;
     const result = Calculator.calculateSimple(purchasePrice, wastagePercent, includeExpenses);
     
     if (result.error) {
