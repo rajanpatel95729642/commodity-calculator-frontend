@@ -37,6 +37,7 @@ function initializeApp() {
     // Setup event listeners
     setupEventListeners();
     setupExpenseToggle();
+    setupSouffCostingToggle();
 }
 
 function setupExpenseToggle() {
@@ -352,8 +353,8 @@ function getSouffPurchaseData() {
         const weight = parseFloat(row.querySelector('.souff-purchase-weight').value);
         const price = parseFloat(row.querySelector('.souff-purchase-price').value);
         
-        if (!isNaN(weight) && !isNaN(price) && weight > 0 && price > 0) {
-            purchases.push({ weight, price });
+        if (!isNaN(weight) && weight > 0) {  // ← weight only, price optional
+            purchases.push({ weight, price: isNaN(price) ? 0 : price });
         }
     });
     
