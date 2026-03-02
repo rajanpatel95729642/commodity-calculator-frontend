@@ -1476,3 +1476,34 @@ function exportMixPDF() {
         alert('❌ Failed to export PDF');
     }
 }
+
+async function loadSouffCostingFeatureFlag() {
+    try {
+        const token = localStorage.getItem('access_token');
+        const res = await fetch('https://commodity-calculator-api.onrender.com/api/user/profile', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        // DEBUG - remove after fixing
+        console.log('🔍 Profile response:', data);
+        console.log('🔍 souff_costing_enabled:', data.user?.souff_costing_enabled);
+        console.log('🔍 Section element:', document.getElementById('souff-costing-toggle-section'));
+        
+        const enabled = data.user?.souff_costing_enabled !== false;
+        console.log('🔍 enabled:', enabled);
+        
+        const section = document.getElementById('souff-costing-toggle-section');
+        if (section) {
+            if (enabled) {
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+                const costingResult = document.getElementById('souff-costing-result');
+                if (costingResult) costingResult.classList.add('hidden');
+            }
+        }
+    } catch (err) {
+        console.log('Feature flag load skipped:', err.message);
+    }
+}
