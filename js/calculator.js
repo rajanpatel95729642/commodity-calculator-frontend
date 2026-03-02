@@ -125,7 +125,7 @@ const Calculator = {
         if (includeCosting && approxPrice && totalTaiyarWeight > 0) {
             const exp = parseFloat(this.defaultExpenses);
             const price = parseFloat(approxPrice);
-            const beforeCleaningCosting = approxPrice + exp;
+            const beforeCleaningCosting = price + exp; // ✅ use parsed price
             const aakhoPaloCosting = (((beforeCleaningCosting * totalPurchaseWeight) / 20) / totalTaiyarWeight) * 20;
 
             result.approxPrice = price.toFixed(2);

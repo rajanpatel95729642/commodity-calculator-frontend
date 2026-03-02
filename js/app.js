@@ -478,7 +478,7 @@ async function calculateSouff() {
         }
     }
     
-    const result = Calculator.calculateSouff(purchases, boxWeights, includeCosting);
+    const result = Calculator.calculateSouff(purchases, boxWeights, includeCosting, approxPrice); // ✅ pass approxPrice
     
     if (result.error) {
         alert(result.error);
@@ -494,7 +494,7 @@ async function calculateSouff() {
     // Show/hide costing result
     const costingResult = document.getElementById('souff-costing-result');
     if (includeCosting && result.aakhoPaloCosting) {
-        document.getElementById('souff-result-avg-price').textContent = '₹' + result.avgPrice;
+        document.getElementById('souff-result-avg-price').textContent = '₹' + result.approxPrice; // ✅ use approxPrice not avgPrice
         document.getElementById('souff-result-aakho-palo').textContent = '₹' + result.aakhoPaloCosting;
         costingResult.classList.remove('hidden');
     } else {
@@ -554,8 +554,9 @@ async function saveSouffToHistory(nameVakal) {
     const purchases = getSouffPurchaseData();
     const boxWeights = getSouffBoxWeights();
     const includeCosting = document.getElementById('souff-costing-toggle')?.checked || false;
+    const approxPrice = includeCosting ? parseFloat(document.getElementById('souff-approx-price').value) : null; // ✅ read approxPrice
     
-    const result = Calculator.calculateSouff(purchases, boxWeights, includeCosting);
+    const result = Calculator.calculateSouff(purchases, boxWeights, includeCosting, approxPrice); // ✅ pass approxPrice
     
     if (result.error) {
         alert(result.error);
@@ -1091,23 +1092,45 @@ function renderHistoryItem(item) {
             }
         }
         
-        // Result section with wastage
+        // Build costing card if saved with costing
+        let costingHTML = '';
+        if (item.data.includeCosting && item.data.aakhoPaloCosting) {
+            costingHTML = `
+                <div class="result-card result-card-primary" style="margin-top:0.5rem;">
+                    <div class="result-row">
+                        <span class="result-label-light">Approx Price (per 20kg)</span>
+                        <span class="result-value-light">₹${item.data.approxPrice || 'N/A'}</span>
+                    </div>
+                    <hr class="result-divider result-divider-light">
+                    <div class="result-row">
+                        <span class="result-label-light" style="font-weight:600;">Aakho Palo Costing</span>
+                        <span class="result-value-lg-light">₹${item.data.aakhoPaloCosting}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Result section with wastage + optional costing
         detailsHTML = `
             <div class="text-sm">
                 ${purchaseHTML}
                 ${boxHTML}
                 
-                <!-- Result Section -->
-                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-3 border-2 border-red-200">
-                    <div class="font-semibold text-gray-700 mb-2">Result:</div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-red-700 font-semibold">❌ Wastage:</span>
-                        <div class="text-right">
-                            <div class="text-xl font-bold text-red-600">${item.data.wastageWeight || 'N/A'} kg</div>
-                            <div class="text-sm text-red-600">(${item.data.wastagePercent || 'N/A'}%)</div>
-                        </div>
+                <!-- Wastage Result -->
+                <div class="result-card result-card-red">
+                    <div style="font-weight:700;font-size:0.85rem;color:#7f1d1d;margin-bottom:0.6rem;text-transform:uppercase;letter-spacing:0.06em;">Wastage</div>
+                    <div class="result-row">
+                        <span class="result-label">Wastage Weight</span>
+                        <span class="result-value result-value-red result-value-lg">${item.data.wastageWeight || 'N/A'} kg</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Wastage %</span>
+                        <span class="result-value result-value-red">${item.data.wastagePercent || 'N/A'}%</span>
                     </div>
                 </div>
+
+                <!-- Costing Result (only when saved with toggle ON) -->
+                ${costingHTML}
             </div>
         `;
     } else if (calculationType === 'simple') {
