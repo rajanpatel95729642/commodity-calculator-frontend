@@ -728,7 +728,7 @@
             </button>
 
             <!-- Purchase Details -->
-            <div class="card">
+            <div id="souff-purchase-card" class="card">
                 <div class="card-title">Purchase Details</div>
                 <div id="souff-purchase-rows-container">
                     <div class="souff-purchase-row" style="margin-bottom:0.65rem;">
@@ -759,7 +759,7 @@
             </div>
 
             <!-- Box Weights -->
-            <div class="card">
+            <div id="souff-box-card" class="card">
                 <div class="card-title">Box Weights (Taiyar)</div>
                 <div class="field-row" style="margin-bottom:0.65rem;">
                     <div>
@@ -841,11 +841,20 @@
             </div>
 
             <!-- Buttons -->
-            <div class="field-row" style="gap:0.5rem;margin-bottom:0.75rem;">
+            <div id="souff-action-buttons" class="field-row" style="gap:0.5rem;margin-bottom:0.75rem;">
                 <button id="souff-calculate" class="btn btn-gold" style="font-size:0.9rem;padding:0.75rem 1rem;">Calculate</button>
                 <button id="souff-reset" class="btn btn-ghost">Reset</button>
             </div>
 
+            <!-- Edit Button - Souff Calculator -->
+            <div id="edit-souff-btn" class="hidden" style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;">
+                <button style="background:var(--navy);color:var(--cream);border:none;border-radius:6px;
+                            padding:0.45rem 1rem;font-size:0.82rem;font-weight:600;cursor:pointer;
+                            display:flex;align-items:center;gap:6px;">
+                    ✏️ Edit
+                </button>
+            </div>
+            
             <!-- Souff Result -->
             <div id="souff-result" class="hidden">
                 <div class="result-card result-card-red">
@@ -899,7 +908,7 @@
                 Back to Main
             </button>
 
-            <div class="card">
+            <div id="mix-input-card" class="card">
                 <div class="card-title">Purchase Details</div>
 
                 <div id="purchase-rows-container">
@@ -960,6 +969,13 @@
                     <button id="reset-mix" class="btn btn-ghost">Reset</button>
                 </div>
 
+                <div id="edit-mix-btn" class="hidden" style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;">
+                    <button style="background:var(--navy);color:var(--cream);border:none;border-radius:6px;
+                                padding:0.45rem 1rem;font-size:0.82rem;font-weight:600;cursor:pointer;
+                                display:flex;align-items:center;gap:6px;">
+                        ✏️ Edit
+                    </button>
+                </div>
                 <!-- Mix Result -->
                 <div id="mix-result" class="hidden">
                     <div class="result-card result-card-amber" style="margin-top:0.75rem;">

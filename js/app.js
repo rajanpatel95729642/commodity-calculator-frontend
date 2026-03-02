@@ -203,8 +203,19 @@ function setupEventListeners() {
     document.getElementById('calculate-simple').addEventListener('click', async function(e) {
     e.preventDefault();
     await calculateSimple();
-});
+
     
+});
+    document.getElementById('edit-mix-btn').querySelector('button').addEventListener('click', function(e) {
+        e.preventDefault();
+        editMix();
+    });
+
+    document.getElementById('edit-souff-btn')?.querySelector('button').addEventListener('click', function(e) {
+        e.preventDefault();
+        editSouff();
+    });    
+
     document.getElementById('reset-simple').addEventListener('click', function(e) {
         e.preventDefault();
         resetSimple();
@@ -532,9 +543,29 @@ async function calculateSouff() {
         costingResult.classList.add('hidden');
     }
     
+    document.getElementById('souff-purchase-card').classList.add('hidden');
+    document.getElementById('souff-box-card').classList.add('hidden');
+    document.getElementById('souff-costing-toggle-section').classList.add('hidden');
+    document.getElementById('souff-approx-price-box').classList.add('hidden');
+    document.getElementById('souff-action-buttons').classList.add('hidden');
     document.getElementById('souff-result').classList.remove('hidden');
     document.getElementById('souff-export-section').classList.remove('hidden');
+    document.getElementById('edit-souff-btn').classList.remove('hidden');
     await PremiumSystem.incrementUsage();
+}
+
+function editSouff() {
+    document.getElementById('souff-purchase-card').classList.remove('hidden');
+    document.getElementById('souff-box-card').classList.remove('hidden');
+    document.getElementById('souff-costing-toggle-section').classList.remove('hidden');
+    const toggle = document.getElementById('souff-costing-toggle');
+    if (toggle && toggle.checked) {
+        document.getElementById('souff-approx-price-box').classList.remove('hidden');
+    }
+    document.getElementById('souff-action-buttons').classList.remove('hidden');
+    document.getElementById('souff-result').classList.add('hidden');
+    document.getElementById('souff-export-section').classList.add('hidden');
+    document.getElementById('edit-souff-btn').classList.add('hidden');
 }
 
 function resetSouff() {
@@ -822,6 +853,7 @@ function getPurchaseData() {
 
 // Mix Calculator functions
 async function calculateMix() {
+
     const allowed = await PremiumSystem.canCalculate();
     if (!allowed) return;
     const purchases = getPurchaseData();
@@ -861,10 +893,19 @@ async function calculateMix() {
         document.getElementById('aakho-palo-result').classList.remove('hidden');
         document.getElementById('one-number-result').classList.add('hidden');
     }
-    
+
+    document.getElementById('mix-input-card').classList.add('hidden');
     document.getElementById('mix-result').classList.remove('hidden');
     document.getElementById('mix-export-section').classList.remove('hidden');
+    document.getElementById('edit-mix-btn').classList.remove('hidden');
     await PremiumSystem.incrementUsage();
+}
+
+function editMix() {
+    document.getElementById('mix-input-card').classList.remove('hidden');
+    document.getElementById('mix-result').classList.add('hidden');
+    document.getElementById('mix-export-section').classList.add('hidden');
+    document.getElementById('edit-mix-btn').classList.add('hidden');
 }
 
 function resetMix() {
