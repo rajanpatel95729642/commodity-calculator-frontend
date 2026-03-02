@@ -96,14 +96,13 @@ function setupSouffCostingToggle() {
 async function loadSouffCostingFeatureFlag() {
     try {
         const token = localStorage.getItem('access_token');
-        const res = await fetch('https://commodity-calculator-api.onrender.com/api/admin/settings', {
+        const res = await fetch('https://commodity-calculator-api.onrender.com/api/user/profile', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!res.ok) return; // silently skip if not admin or error
+        if (!res.ok) return; // silently skip on error
         const data = await res.json();
-        const settings = data.settings || {};
-        // default ON if key not set
-        const enabled = settings.souff_costing_enabled !== 'false';
+        // souff_costing_enabled is in user object, default ON if missing
+        const enabled = data.user?.souff_costing_enabled !== false;
         const section = document.getElementById('souff-costing-toggle-section');
         if (section) {
             if (enabled) {
