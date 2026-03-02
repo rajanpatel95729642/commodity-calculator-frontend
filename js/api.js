@@ -212,12 +212,52 @@ const API = {
     getCurrentUser() { return TokenManager.getUser(); }
 };
 
-function requireAuth() {
-    if (!API.isLoggedIn()) {
+async function requireAuth() {
+    const accessToken = TokenManager.getAccessToken();
+    const refreshToken = TokenManager.getRefreshToken();
+
+    // No tokens at all — go to login
+    if (!accessToken && !refreshToken) {
         window.location.href = 'login.html';
         return false;
     }
-    return true;
+
+    // If we have an access token, try to verify it
+    if (accessToken) {
+        try {
+            const response = await axios.get('/auth/verify');
+            if (response.data.success) {
+                TokenManager.setUser(response.data.user); // keep user data fresh
+                return true;
+            }
+        } catch (error) {
+            // 401 means expired — axios interceptor will auto-refresh and retry
+            // If interceptor also fails, it redirects to login automatically
+            if (error.response?.status !== 401) {
+                // Network error — allow access if tokens exist (offline tolerance)
+                return true;
+            }
+        }
+    }
+
+    // Try refresh if no access token
+    if (refreshToken && !accessToken) {
+        try {
+            const response = await axios.post('/auth/refresh', {}, {
+                headers: { 'Authorization': `Bearer ${refreshToken}` }
+            });
+            if (response.data.access_token) {
+                TokenManager.setTokens(response.data.access_token);
+                return true;
+            }
+        } catch (e) {
+            TokenManager.clearTokens();
+            window.location.href = 'login.html';
+            return false;
+        }
+    }
+
+    return true; // interceptor handles the rest
 }
 
 function redirectIfLoggedIn() {
