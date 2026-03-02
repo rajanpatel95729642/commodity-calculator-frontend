@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════════════
-//  admin.js  –  FINAL FIXED VERSION
+//  admin.js  –  FINAL FIXED VERSION + Souff Costing Toggle
 //  commodity-calculator-frontend/js/admin.js
 // ════════════════════════════════════════════════════════════════
 
@@ -10,41 +10,23 @@ let commodityChartInstance = null;
 let currentPage = { users: 1, calcs: 1, logs: 1 };
 let confirmCallback = null;
 
-// ─── INIT ────────────────────────────────────────────────────────
-
 document.addEventListener('DOMContentLoaded', async () => {
     if (!API.isLoggedIn()) {
         window.location.href = 'login.html';
         return;
     }
-
     try {
         const token = localStorage.getItem('access_token');
-
-        // Use raw fetch (NOT axios) to avoid interceptor redirect
         const resp = await fetch('https://commodity-calculator-api.onrender.com/api/auth/verify', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await resp.json();
-
-        if (!data.success) {
-            localStorage.clear();
-            window.location.href = 'login.html';
-            return;
-        }
-
+        if (!data.success) { localStorage.clear(); window.location.href = 'login.html'; return; }
         const user = data.user;
         localStorage.setItem('user', JSON.stringify(user));
-
-        if (!user.is_admin) {
-            alert('⛔ Admin access required.');
-            window.location.href = 'index.html';
-            return;
-        }
-
+        if (!user.is_admin) { alert('⛔ Admin access required.'); window.location.href = 'index.html'; return; }
         document.getElementById('admin-email').textContent = user.email;
         showPage('dashboard');
-
     } catch (err) {
         console.error('Auth verify failed:', err);
         localStorage.clear();
@@ -52,25 +34,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// ─── NAVIGATION ──────────────────────────────────────────────────
-
 function showPage(name) {
     document.querySelectorAll('.page-section').forEach(s => s.classList.add('hidden'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
     const section = document.getElementById(`page-${name}`);
     if (section) section.classList.remove('hidden');
-
     const btn = document.querySelector(`[data-page="${name}"]`);
     if (btn) btn.classList.add('active');
-
     const titles = {
         dashboard: 'Dashboard', users: 'Users', calculations: 'Calculations',
         announcements: 'Announcements', monetization: 'Monetization',
         logs: 'Activity Logs', settings: 'Settings', 'user-detail': 'User Detail'
     };
     document.getElementById('page-title').textContent = titles[name] || name;
-
     const loaders = {
         dashboard: loadDashboard, users: loadUsers,
         calculations: loadCalculations, announcements: loadAnnouncements,
@@ -79,37 +55,21 @@ function showPage(name) {
     if (loaders[name]) loaders[name]();
 }
 
-// ─── SAFE API CALL (uses fetch, bypasses axios interceptor) ──────
-
 async function adminFetch(method, path, body = null) {
-    // Try to refresh if token is close to expiring or already expired
     let token = localStorage.getItem('access_token');
-    
     const opts = {
         method,
-        headers: {
-            'Content-Type':  'application/json',
-            'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
     };
     if (body) opts.body = JSON.stringify(body);
-    
     let res = await fetch(`https://commodity-calculator-api.onrender.com/api/admin${path}`, opts);
-    
-    // If 401, try refreshing the token once
     if (res.status === 401) {
         const refreshed = await tryRefreshToken();
-        if (!refreshed) {
-            localStorage.clear();
-            window.location.href = 'login.html';
-            return;
-        }
-        // Retry with new token
+        if (!refreshed) { localStorage.clear(); window.location.href = 'login.html'; return; }
         token = localStorage.getItem('access_token');
         opts.headers['Authorization'] = `Bearer ${token}`;
         res = await fetch(`https://commodity-calculator-api.onrender.com/api/admin${path}`, opts);
     }
-    
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
     return data;
@@ -119,25 +79,14 @@ async function tryRefreshToken() {
     try {
         const refreshToken = localStorage.getItem('refresh_token');
         if (!refreshToken) return false;
-        
         const res = await fetch('https://commodity-calculator-api.onrender.com/api/auth/refresh', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${refreshToken}`
-            }
+            method: 'POST', headers: { 'Authorization': `Bearer ${refreshToken}` }
         });
-        
         if (!res.ok) return false;
-        
         const data = await res.json();
-        if (data.access_token) {
-            localStorage.setItem('access_token', data.access_token);
-            return true;
-        }
+        if (data.access_token) { localStorage.setItem('access_token', data.access_token); return true; }
         return false;
-    } catch {
-        return false;
-    }
+    } catch { return false; }
 }
 
 // ─── DASHBOARD ───────────────────────────────────────────────────
@@ -145,8 +94,7 @@ async function tryRefreshToken() {
 async function loadDashboard() {
     try {
         const data = await adminFetch('GET', '/stats');
-        const s    = data.stats;
-
+        const s = data.stats;
         document.getElementById('s-total-users').textContent = s.total_users;
         document.getElementById('s-new-week').textContent    = `+${s.new_this_week}`;
         document.getElementById('s-total-calcs').textContent = s.total_calculations;
@@ -155,13 +103,9 @@ async function loadDashboard() {
         document.getElementById('s-premium').textContent     = s.premium_users;
         document.getElementById('s-revenue').textContent     = s.monetization_enabled ? `₹${s.yearly_revenue}` : '—';
         document.getElementById('s-mono').textContent        = s.monetization_enabled ? '🟢 ON' : '⚪ OFF';
-
         loadGrowthChart(30);
         loadCommodityChart(s.commodity_breakdown);
-    } catch (err) {
-        console.error(err);
-        showToast('Failed to load dashboard: ' + err.message, 'error');
-    }
+    } catch (err) { console.error(err); showToast('Failed to load dashboard: ' + err.message, 'error'); }
 }
 
 async function loadGrowthChart(days = 30) {
@@ -171,7 +115,6 @@ async function loadGrowthChart(days = 30) {
     try {
         const data = await adminFetch('GET', `/user-growth?days=${days}`);
         const rows = data.growth;
-
         if (growthChartInstance) growthChartInstance.destroy();
         const ctx = document.getElementById('growthChart').getContext('2d');
         growthChartInstance = new Chart(ctx, {
@@ -193,7 +136,6 @@ function loadCommodityChart(breakdown = {}) {
     const labels = Object.keys(breakdown);
     const values = Object.values(breakdown);
     const colors = ['#60a5fa','#34d399','#f59e0b','#a78bfa','#f472b6','#94a3b8'];
-
     if (commodityChartInstance) commodityChartInstance.destroy();
     const ctx = document.getElementById('commodityChart').getContext('2d');
     commodityChartInstance = new Chart(ctx, {
@@ -209,18 +151,13 @@ async function loadUsers(page = 1) {
     currentPage.users = page;
     const search = document.getElementById('user-search')?.value || '';
     const tier   = document.getElementById('user-tier')?.value || '';
-
     try {
         const data = await adminFetch('GET', `/users?page=${page}&per_page=20&search=${search}&tier=${tier}`);
         const { users, pagination } = data;
-
         document.getElementById('users-tbody').innerHTML = users.length === 0
             ? '<tr><td colspan="5" class="text-center py-8 text-gray-400">No users found</td></tr>'
             : users.map(u => `<tr>
-                <td>
-                    <div class="font-medium">${u.email}</div>
-                    <div class="text-xs text-gray-400">${u.display_name || ''}</div>
-                </td>
+                <td><div class="font-medium">${u.email}</div><div class="text-xs text-gray-400">${u.display_name || ''}</div></td>
                 <td><span class="badge-${u.subscription_tier}">${u.subscription_tier.toUpperCase()}</span></td>
                 <td>${u.calculations_count}</td>
                 <td class="text-xs text-gray-500">${formatDate(u.created_at)}</td>
@@ -229,7 +166,6 @@ async function loadUsers(page = 1) {
                     <button class="btn-sm bg-red-100 text-red-700" onclick="confirmDeleteUser(${u.id},'${u.email}')">Delete</button>
                 </td>
             </tr>`).join('');
-
         renderPagination('users-pagination', pagination, loadUsers);
     } catch (err) { showToast('Failed to load users: ' + err.message, 'error'); }
 }
@@ -238,19 +174,14 @@ async function viewUser(uid) {
     try {
         const data = await adminFetch('GET', `/user/${uid}`);
         const { user, recent_calculations, recent_activity } = data;
-
         const bd = Object.entries(user.commodity_breakdown || {})
             .map(([k,v]) => `<span class="text-xs bg-gray-100 px-2 py-1 rounded">${k}: ${v}</span>`).join(' ');
-
         document.getElementById('user-detail-content').innerHTML = `
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white rounded-xl shadow-sm p-6">
                     <div class="flex items-center gap-4 mb-4">
                         <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-2xl">👤</div>
-                        <div>
-                            <h2 class="font-bold text-lg text-gray-800">${user.email}</h2>
-                            <p class="text-sm text-gray-500">${user.display_name || 'No name'}</p>
-                        </div>
+                        <div><h2 class="font-bold text-lg text-gray-800">${user.email}</h2><p class="text-sm text-gray-500">${user.display_name || 'No name'}</p></div>
                     </div>
                     <div class="space-y-2 text-sm text-gray-600">
                         <div class="flex justify-between"><span>Plan:</span><span class="badge-${user.subscription_tier}">${user.subscription_tier.toUpperCase()}</span></div>
@@ -286,7 +217,6 @@ async function viewUser(uid) {
                         </div>`).join('')}
                 </div>
             </div>`;
-
         showPage('user-detail');
     } catch (err) { showToast('Failed to load user: ' + err.message, 'error'); }
 }
@@ -325,7 +255,6 @@ async function loadCalculations(page = 1) {
     try {
         const data = await adminFetch('GET', `/calculations?page=${page}&per_page=20&commodity=${commodity}`);
         const { calculations, pagination } = data;
-
         document.getElementById('calcs-tbody').innerHTML = calculations.length === 0
             ? '<tr><td colspan="5" class="text-center py-8 text-gray-400">No calculations found</td></tr>'
             : calculations.map(c => `<tr>
@@ -335,7 +264,6 @@ async function loadCalculations(page = 1) {
                 <td>${(c.data && c.data.nameVakal) ? c.data.nameVakal : '—'}</td>
                 <td><button class="btn-sm bg-red-100 text-red-700" onclick="confirmDeleteCalc(${c.id})">Delete</button></td>
             </tr>`).join('');
-
         renderPagination('calcs-pagination', pagination, loadCalculations);
     } catch (err) { showToast('Failed: ' + err.message, 'error'); }
 }
@@ -412,11 +340,9 @@ async function loadMonetization() {
     try {
         const data = await adminFetch('GET', '/monetization');
         const { settings, stats } = data;
-
         const card = document.getElementById('mono-card');
         const btn  = document.getElementById('mono-toggle-btn');
         const text = document.getElementById('mono-status-text');
-
         if (settings.enabled) {
             card.className   = 'bg-white rounded-xl shadow-sm p-6 mb-6 mono-enabled';
             btn.textContent  = '🔴 Turn OFF Monetization';
@@ -434,131 +360,11 @@ async function loadMonetization() {
             text.textContent = 'Monetization is OFF — all users have full access';
             document.getElementById('mono-stats').classList.add('hidden');
         }
-
         document.getElementById('limit-calcs').value   = settings.free_calculations_limit;
         document.getElementById('limit-history').value = settings.free_history_limit;
         document.getElementById('limit-pdf').checked   = settings.free_pdf_export;
         document.getElementById('premium-price').value = settings.premium_price_yearly;
-
     } catch (err) { showToast('Failed: ' + err.message, 'error'); }
-}
-
-// ────────────────────────────────────────────────────────────────
-//  Upgrade User to Premium (called from user detail page)
-// ────────────────────────────────────────────────────────────────
-async function upgradeToPremium(userId, months = 12) {
-    showConfirm(
-        'Upgrade to Premium',
-        `Upgrade this user to Premium for ${months} months?`,
-        async () => {
-            try {
-                const token = localStorage.getItem('access_token');
-                const res = await axios.post(
-                    `https://commodity-calculator-api.onrender.com/api/admin/users/${userId}/upgrade`,
-                    { months: months },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                if (res.data.success) {
-                    showToast(`✅ Upgraded! Premium valid until ${res.data.premium_expiry}`);
-                    loadUserDetail(userId); // refresh the user detail view
-                }
-            } catch (err) {
-                showToast('❌ Upgrade failed: ' + (err.response?.data?.message || err.message));
-            }
-        }
-    );
-}
-
-
-// ────────────────────────────────────────────────────────────────
-//  Downgrade User to Free (called from user detail page)
-// ────────────────────────────────────────────────────────────────
-async function downgradeToFree(userId) {
-    showConfirm(
-        'Downgrade to Free',
-        'Remove Premium and downgrade this user to Free plan?',
-        async () => {
-            try {
-                const token = localStorage.getItem('access_token');
-                const res = await axios.post(
-                    `https://commodity-calculator-api.onrender.com/api/admin/users/${userId}/downgrade`,
-                    {},
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                if (res.data.success) {
-                    showToast('✅ User downgraded to Free plan');
-                    loadUserDetail(userId); // refresh the user detail view
-                }
-            } catch (err) {
-                showToast('❌ Downgrade failed: ' + (err.response?.data?.message || err.message));
-            }
-        }
-    );
-}
-
-
-// ────────────────────────────────────────────────────────────────
-//  Render User Detail Page — add this inside your existing
-//  loadUserDetail() function where you build the HTML
-// ────────────────────────────────────────────────────────────────
-function renderSubscriptionSection(user) {
-    const isPremium = user.subscription_tier === 'premium';
-    const expiryText = user.premium_expiry ? `Valid until <strong>${user.premium_expiry}</strong>` : '';
-
-    return `
-    <div class="bg-white rounded-xl shadow-sm p-6 mb-4">
-        <h3 class="font-bold text-gray-700 mb-4">💎 Subscription</h3>
-
-        <!-- Current Status -->
-        <div class="flex items-center justify-between mb-4 p-4 rounded-xl border
-            ${isPremium
-                ? 'bg-yellow-50 border-yellow-200'
-                : 'bg-gray-50 border-gray-200'}">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl">${isPremium ? '💎' : '🆓'}</span>
-                <div>
-                    <div class="font-bold ${isPremium ? 'text-yellow-700' : 'text-gray-700'}">
-                        ${isPremium ? 'Premium Plan' : 'Free Plan'}
-                    </div>
-                    ${isPremium
-                        ? `<div class="text-xs text-yellow-600 mt-0.5">${expiryText}</div>`
-                        : `<div class="text-xs text-gray-400 mt-0.5">Limited calculations per year</div>`
-                    }
-                </div>
-            </div>
-            <span class="text-xs font-bold px-3 py-1 rounded-full
-                ${isPremium
-                    ? 'bg-yellow-400 text-white'
-                    : 'bg-gray-200 text-gray-600'}">
-                ${isPremium ? 'PREMIUM' : 'FREE'}
-            </span>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex gap-3">
-            ${!isPremium ? `
-                <div class="flex items-center gap-2 flex-1">
-                    <select id="upgrade-months" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                        <option value="1">1 Month</option>
-                        <option value="3">3 Months</option>
-                        <option value="6">6 Months</option>
-                        <option value="12" selected>12 Months (1 Year)</option>
-                    </select>
-                    <button onclick="upgradeToPremium(${user.id}, parseInt(document.getElementById('upgrade-months').value))"
-                        class="flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600
-                               text-white font-bold py-2 px-4 rounded-lg text-sm transition-all shadow-md">
-                        💎 Upgrade to Premium
-                    </button>
-                </div>
-            ` : `
-                <button onclick="downgradeToFree(${user.id})"
-                    class="flex-1 bg-gray-100 hover:bg-red-50 hover:text-red-600 text-gray-600
-                           font-medium py-2 px-4 rounded-lg text-sm transition-colors border border-gray-200">
-                    🔽 Downgrade to Free
-                </button>
-            `}
-        </div>
-    </div>`;
 }
 
 async function toggleMonetization() {
@@ -604,8 +410,8 @@ async function loadLogs(page = 1) {
 
 // ─── SETTINGS ─────────────────────────────────────────────────────
 
-// Track current maintenance state
-let _maintenanceEnabled = false;
+let _maintenanceEnabled  = false;
+let _souffCostingEnabled = true;
 
 async function loadSettings() {
     try {
@@ -613,65 +419,96 @@ async function loadSettings() {
         const s = data.settings;
         document.getElementById('set-app-name').value        = s.app_name || '';
         document.getElementById('set-maintenance-msg').value = s.maintenance_message || '';
-        
+
         _maintenanceEnabled = s.maintenance_mode === 'true';
         updateMaintenanceUI(_maintenanceEnabled);
+
+        // Souff costing feature flag — default ON if key not present
+        _souffCostingEnabled = s.souff_costing_enabled !== 'false';
+        updateSouffCostingUI(_souffCostingEnabled);
     } catch (err) { showToast('Failed: ' + err.message, 'error'); }
 }
 
+// ── Maintenance UI ──
 function updateMaintenanceUI(isOn) {
     const card   = document.getElementById('maintenance-card');
     const icon   = document.getElementById('maintenance-icon');
     const text   = document.getElementById('maintenance-status-text');
     const btn    = document.getElementById('maintenance-toggle-btn');
     const circle = document.getElementById('maintenance-toggle-circle');
-
     if (isOn) {
-        card.style.borderColor   = '#ef4444';
-        card.style.background    = '#fff5f5';
-        icon.textContent         = '🔴';
-        text.textContent         = 'App is UNDER MAINTENANCE — users cannot access';
-        text.style.color         = '#dc2626';
-        btn.style.background     = '#ef4444';
-        circle.style.transform   = 'translateX(1.75rem)';
+        card.style.borderColor = '#ef4444'; card.style.background = '#fff5f5';
+        icon.textContent = '🔴';
+        text.textContent = 'App is UNDER MAINTENANCE — users cannot access'; text.style.color = '#dc2626';
+        btn.style.background = '#ef4444'; circle.style.transform = 'translateX(1.75rem)';
     } else {
-        card.style.borderColor   = '#d1d5db';
-        card.style.background    = '#f9fafb';
-        icon.textContent         = '🟢';
-        text.textContent         = 'App is running normally';
-        text.style.color         = '#6b7280';
-        btn.style.background     = '#d1d5db';
-        circle.style.transform   = 'translateX(0.25rem)';
+        card.style.borderColor = '#d1d5db'; card.style.background = '#f9fafb';
+        icon.textContent = '🟢';
+        text.textContent = 'App is running normally'; text.style.color = '#6b7280';
+        btn.style.background = '#d1d5db'; circle.style.transform = 'translateX(0.25rem)';
     }
 }
 
 async function toggleMaintenanceMode() {
     _maintenanceEnabled = !_maintenanceEnabled;
     updateMaintenanceUI(_maintenanceEnabled);
-    
-    // Auto-save immediately
     try {
-        await adminFetch('PUT', '/settings', {
-            app_name:            document.getElementById('set-app-name').value,
-            maintenance_mode:    _maintenanceEnabled ? 'true' : 'false',
-            maintenance_message: document.getElementById('set-maintenance-msg').value,
-        });
+        await _saveAllSettings();
         showToast(_maintenanceEnabled ? '🔴 Maintenance ON — users blocked' : '🟢 Maintenance OFF — app live');
     } catch (err) {
-        // Revert on failure
         _maintenanceEnabled = !_maintenanceEnabled;
         updateMaintenanceUI(_maintenanceEnabled);
         showToast('Failed: ' + err.message, 'error');
     }
 }
 
+// ── Souff Costing UI ──
+function updateSouffCostingUI(isOn) {
+    const card   = document.getElementById('souff-costing-card');
+    const icon   = document.getElementById('souff-costing-icon');
+    const text   = document.getElementById('souff-costing-status-text');
+    const btn    = document.getElementById('souff-costing-toggle-btn');
+    const circle = document.getElementById('souff-costing-circle');
+    if (!card) return;
+    if (isOn) {
+        card.style.borderColor = '#10b981'; card.style.background = '#f0fdf4';
+        icon.textContent = '🟢';
+        text.textContent = 'Souff Aakho Palo Costing is ON — visible to users'; text.style.color = '#059669';
+        btn.style.background = '#10b981'; circle.style.transform = 'translateX(1.75rem)';
+    } else {
+        card.style.borderColor = '#d1d5db'; card.style.background = '#f9fafb';
+        icon.textContent = '⚫';
+        text.textContent = 'Souff Aakho Palo Costing is OFF — hidden from users'; text.style.color = '#6b7280';
+        btn.style.background = '#d1d5db'; circle.style.transform = 'translateX(0.25rem)';
+    }
+}
+
+async function toggleSouffCosting() {
+    _souffCostingEnabled = !_souffCostingEnabled;
+    updateSouffCostingUI(_souffCostingEnabled);
+    try {
+        await _saveAllSettings();
+        showToast(_souffCostingEnabled ? '🟢 Souff Costing turned ON' : '⚫ Souff Costing turned OFF');
+    } catch (err) {
+        _souffCostingEnabled = !_souffCostingEnabled;
+        updateSouffCostingUI(_souffCostingEnabled);
+        showToast('Failed: ' + err.message, 'error');
+    }
+}
+
+// ── Shared save helper ──
+async function _saveAllSettings() {
+    return adminFetch('PUT', '/settings', {
+        app_name:              document.getElementById('set-app-name').value,
+        maintenance_mode:      _maintenanceEnabled     ? 'true' : 'false',
+        maintenance_message:   document.getElementById('set-maintenance-msg').value,
+        souff_costing_enabled: _souffCostingEnabled    ? 'true' : 'false',
+    });
+}
+
 async function saveSettings() {
     try {
-        await adminFetch('PUT', '/settings', {
-            app_name:            document.getElementById('set-app-name').value,
-            maintenance_mode:    _maintenanceEnabled ? 'true' : 'false',
-            maintenance_message: document.getElementById('set-maintenance-msg').value,
-        });
+        await _saveAllSettings();
         showToast('Settings saved ✅');
     } catch (err) { showToast('Failed: ' + err.message, 'error'); }
 }

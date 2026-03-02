@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Initialize calculator with cloud sync
     await Calculator.init();
     
+    // Load admin feature flags (souff costing on/off)
+    await loadSouffCostingFeatureFlag();
+    
     // Initialize app
     initializeApp();
 });
@@ -87,6 +90,35 @@ function setupSouffCostingToggle() {
             if (costingResult) costingResult.classList.add('hidden');
         }
     });
+}
+
+// ─── SOUFF COSTING FEATURE FLAG (controlled by admin settings) ───
+async function loadSouffCostingFeatureFlag() {
+    try {
+        const token = localStorage.getItem('access_token');
+        const res = await fetch('https://commodity-calculator-api.onrender.com/api/admin/settings', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return; // silently skip if not admin or error
+        const data = await res.json();
+        const settings = data.settings || {};
+        // default ON if key not set
+        const enabled = settings.souff_costing_enabled !== 'false';
+        const section = document.getElementById('souff-costing-toggle-section');
+        if (section) {
+            if (enabled) {
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+                // Also hide result card if feature disabled
+                const costingResult = document.getElementById('souff-costing-result');
+                if (costingResult) costingResult.classList.add('hidden');
+            }
+        }
+    } catch (err) {
+        // On error keep toggle visible (default ON)
+        console.log('Feature flag load skipped:', err.message);
+    }
 }
 
 function setupEventListeners() {
@@ -478,7 +510,7 @@ async function calculateSouff() {
         }
     }
     
-    const result = Calculator.calculateSouff(purchases, boxWeights, includeCosting, approxPrice); // ✅ pass approxPrice
+    const result = Calculator.calculateSouff(purchases, boxWeights, includeCosting, approxPrice);
     
     if (result.error) {
         alert(result.error);
@@ -494,7 +526,7 @@ async function calculateSouff() {
     // Show/hide costing result
     const costingResult = document.getElementById('souff-costing-result');
     if (includeCosting && result.aakhoPaloCosting) {
-        document.getElementById('souff-result-avg-price').textContent = '₹' + result.approxPrice; // ✅ use approxPrice not avgPrice
+        document.getElementById('souff-result-avg-price').textContent = '₹' + result.approxPrice; // ✅ approxPrice not avgPrice
         document.getElementById('souff-result-aakho-palo').textContent = '₹' + result.aakhoPaloCosting;
         costingResult.classList.remove('hidden');
     } else {
@@ -574,6 +606,13 @@ async function saveSouffToHistory(nameVakal) {
         wastageWeight: result.wastageWeight,
         wastagePercent: result.wastagePercent
     };
+
+    // Save costing data if available
+    if (includeCosting && result.aakhoPaloCosting) {
+        saveData.approxPrice = result.approxPrice;
+        saveData.aakhoPaloCosting = result.aakhoPaloCosting;
+        saveData.includeCosting = true;
+    }
 
     // Save costing data if available
     if (includeCosting && result.aakhoPaloCosting) {
@@ -1117,15 +1156,14 @@ function renderHistoryItem(item) {
                 ${boxHTML}
                 
                 <!-- Wastage Result -->
-                <div class="result-card result-card-red">
-                    <div style="font-weight:700;font-size:0.85rem;color:#7f1d1d;margin-bottom:0.6rem;text-transform:uppercase;letter-spacing:0.06em;">Wastage</div>
-                    <div class="result-row">
-                        <span class="result-label">Wastage Weight</span>
-                        <span class="result-value result-value-red result-value-lg">${item.data.wastageWeight || 'N/A'} kg</span>
-                    </div>
-                    <div class="result-row">
-                        <span class="result-label">Wastage %</span>
-                        <span class="result-value result-value-red">${item.data.wastagePercent || 'N/A'}%</span>
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-3 border-2 border-red-200">
+                    <div class="font-semibold text-gray-700 mb-2">Result:</div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-red-700 font-semibold">❌ Wastage:</span>
+                        <div class="text-right">
+                            <div class="text-xl font-bold text-red-600">${item.data.wastageWeight || 'N/A'} kg</div>
+                            <div class="text-sm text-red-600">(${item.data.wastagePercent || 'N/A'}%)</div>
+                        </div>
                     </div>
                 </div>
 
