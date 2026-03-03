@@ -929,9 +929,11 @@ function resetMix() {
     document.getElementById('taiyar-weight').value = '';
     document.getElementById('recleaning-weight').value = '';
     document.getElementById('recleaning-price').value = '';
+    document.getElementById('mix-input-card').classList.remove('hidden');
     document.getElementById('mix-result').classList.add('hidden');
     document.getElementById('purchase-summary').classList.add('hidden');
     document.getElementById('mix-export-section').classList.add('hidden');
+    document.getElementById('edit-mix-btn').classList.add('hidden');
 }
 
 // When opening profile modal, fetch and show subscription
