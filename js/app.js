@@ -398,7 +398,8 @@ function showCommodityCalculator(commodity) {
         'jeera': 'Jeera (Cumin)',
         'souff': 'Souff (Fennel)',
         'ajwain': 'Ajwain',
-        'isabgul': 'Isabgul'
+        'isabgul': 'Isabgul',
+        'interest': 'Interest Calculator'
     };
     
     document.getElementById('simple-calculator').classList.add('hidden');
@@ -1170,7 +1171,8 @@ function renderHistoryItem(item) {
         'jeera': 'Jeera (Cumin)',
         'souff': 'Souff (Fennel)',
         'ajwain': 'Ajwain',
-        'isabgul': 'Isabgul'
+        'isabgul': 'Isabgul',
+        'interest': 'Interest Calculator'
     };
     
     const commodityName = item.commodity ? commodityNames[item.commodity] : 'Simple Calculator';
@@ -1331,6 +1333,8 @@ function renderHistoryItem(item) {
                 </div>` : ''}
             </div>
         `;
+    } else if (calculationType === 'interest') {
+    // paste the interest detailsHTML block here
     } else {
         console.error('❌ Unknown type:', calculationType);
         detailsHTML = `<p class="text-red-500 text-sm">Unknown calculation type: ${calculationType}</p>`;
@@ -1481,7 +1485,8 @@ function exportMixPDF() {
             'jeera': 'Jeera (Cumin)',
             'souff': 'Souff (Fennel)',
             'ajwain': 'Ajwain',
-            'isabgul': 'Isabgul'
+            'isabgul': 'Isabgul',
+            'interest': 'Interest Calculator'
         };
 
         const { jsPDF } = window.jspdf;
