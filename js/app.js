@@ -1444,114 +1444,182 @@ function exportMixPDF() {
             'ajwain': 'Ajwain',
             'isabgul': 'Isabgul'
         };
-        
+
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
+        const pageW = doc.internal.pageSize.getWidth();
+        const margin = 15;
+        const colLeft = margin;
+        const colRight = pageW - margin;
+        const tableWidth = colRight - colLeft;
+
         const purchases = getPurchaseData();
         const taiyarWeight = document.getElementById('taiyar-weight').value;
         const recleaningWeight = document.getElementById('recleaning-weight').value;
         const recleaningPrice = document.getElementById('recleaning-price').value;
-        const date = new Date().toLocaleString();
-        
+        const date = new Date().toLocaleString('en-IN');
+
         const result = Calculator.calculateCombinedMultiple(purchases, taiyarWeight, recleaningWeight, recleaningPrice);
-        
-        if (result.error) {
-            alert(result.error);
-            return;
+        if (result.error) { alert(result.error); return; }
+
+        const hasOneNumber = result.oneNumberCosting !== undefined;
+        const commodityName = commodityNames[currentCommodity] || 'Commodity';
+
+        // ── Helper functions ──
+        function drawTableRow(doc, y, label, value, isHeader = false, isHighlight = false) {
+            const rowH = 9;
+            if (isHeader) {
+                doc.setFillColor(15, 30, 53); // navy
+                doc.rect(colLeft, y, tableWidth, rowH, 'F');
+                doc.setTextColor(245, 240, 232); // cream
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'bold');
+                doc.text(label, colLeft + 4, y + 6.2);
+                if (value) doc.text(value, colRight - 4, y + 6.2, { align: 'right' });
+            } else if (isHighlight) {
+                doc.setFillColor(201, 168, 76, 0.15); // gold tint
+                doc.setFillColor(255, 248, 225);
+                doc.rect(colLeft, y, tableWidth, rowH, 'F');
+                doc.setTextColor(15, 30, 53);
+                doc.setFontSize(9.5);
+                doc.setFont(undefined, 'bold');
+                doc.text(label, colLeft + 4, y + 6.2);
+                doc.setTextColor(30, 78, 216);
+                doc.text(value, colRight - 4, y + 6.2, { align: 'right' });
+            } else {
+                doc.setFillColor(255, 255, 255);
+                doc.rect(colLeft, y, tableWidth, rowH, 'F');
+                doc.setTextColor(71, 85, 105);
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'normal');
+                doc.text(label, colLeft + 4, y + 6.2);
+                doc.setTextColor(15, 30, 53);
+                doc.setFont(undefined, 'semibold');
+                doc.text(value, colRight - 4, y + 6.2, { align: 'right' });
+            }
+            // Row border
+            doc.setDrawColor(220, 226, 234);
+            doc.setLineWidth(0.3);
+            doc.rect(colLeft, y, tableWidth, rowH);
         }
-        
-        // Title
-        doc.setFontSize(20);
-        doc.text('Commodity Calculator', 105, 20, { align: 'center' });
-        
-        doc.setFontSize(16);
-        doc.text(commodityNames[currentCommodity] + ' Report', 105, 30, { align: 'center' });
-        
-        // Date
-        doc.setFontSize(10);
-        doc.text(`Generated: ${date}`, 105, 40, { align: 'center' });
-        
-        // Line
-        doc.line(20, 45, 190, 45);
-        
-        // Content
-        doc.setFontSize(12);
-        let y = 60;
-        
-        // Purchase Details
-        if (purchases.length > 1) {
+
+        function drawSectionHeader(doc, y, title) {
+            doc.setFillColor(245, 248, 252);
+            doc.rect(colLeft, y, tableWidth, 8, 'F');
+            doc.setDrawColor(201, 168, 76);
+            doc.setLineWidth(0.6);
+            doc.line(colLeft, y, colLeft, y + 8); // gold left border
+            doc.setLineWidth(0.3);
+            doc.setDrawColor(220, 226, 234);
+            doc.rect(colLeft, y, tableWidth, 8);
+            doc.setTextColor(15, 30, 53);
+            doc.setFontSize(8.5);
             doc.setFont(undefined, 'bold');
-            doc.text('Purchase Details:', 30, y);
-            doc.setFont(undefined, 'normal');
-            y += 8;
-            
-            purchases.forEach((p, i) => {
-                doc.text(`  Purchase ${i + 1}:`, 35, y);
-                doc.text(`${p.weight} kg @ ₹${p.price}`, 150, y, { align: 'right' });
-                y += 7;
-            });
-            
-            y += 3;
+            doc.text(title.toUpperCase(), colLeft + 6, y + 5.5);
+            return y + 8;
         }
-        
-        doc.text('Total Purchase Weight:', 30, y);
-        doc.text(`${result.totalWeight} kg`, 150, y, { align: 'right' });
-        
-        y += 10;
-        doc.text('Weighted Avg Price (per 20kg):', 30, y);
-        doc.text(`₹${result.avgPrice}`, 150, y, { align: 'right' });
-        
-        y += 10;
-        doc.text('Default Expenses:', 30, y);
-        doc.text(`₹${Calculator.getDefaultExpenses()}`, 150, y, { align: 'right' });
-        
-        y += 10;
-        doc.text('Before Cleaning Costing:', 30, y);
-        doc.text(`₹${result.beforeCleaningCosting}`, 150, y, { align: 'right' });
-        
-        y += 10;
-        doc.text('Taiyar Weight:', 30, y);
-        doc.text(`${result.taiyarWeight} kg`, 150, y, { align: 'right' });
-        
-        y += 10;
-        doc.text(`Wastage Weight:`, 30, y);
-        doc.text(`${result.wastageWeight} kg (${result.wastagePercent}%)`, 150, y, { align: 'right' });
-        
-        // Recleaning details if available
-        if (result.oneNumberCosting) {
-            y += 10;
-            doc.text('Recleaning Weight:', 30, y);
-            doc.text(`${result.recleaningWeight} kg`, 150, y, { align: 'right' });
-            
-            y += 10;
-            doc.text('Recleaning Price:', 30, y);
-            doc.text(`₹${result.recleaningPrice}`, 150, y, { align: 'right' });
-        }
-        
-        // Line
-        y += 10;
-        doc.line(20, y, 190, y);
-        
-        // Results
-        y += 15;
-        doc.setFontSize(14);
+
+        // ── HEADER ──
+        // Navy header bar
+        doc.setFillColor(15, 30, 53);
+        doc.rect(0, 0, pageW, 38, 'F');
+
+        // Gold accent line
+        doc.setFillColor(201, 168, 76);
+        doc.rect(0, 38, pageW, 2, 'F');
+
+        // Title
+        doc.setTextColor(245, 240, 232);
+        doc.setFontSize(18);
         doc.setFont(undefined, 'bold');
-        
-        if (result.oneNumberCosting) {
-            doc.text('1 Number Costing (per 20kg):', 30, y);
-            doc.text(`₹${result.oneNumberCosting}`, 150, y, { align: 'right' });
+        doc.text('Commodity Calculator', pageW / 2, 16, { align: 'center' });
+
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(201, 168, 76);
+        doc.text(commodityName + ' — Calculation Report', pageW / 2, 27, { align: 'center' });
+
+        doc.setFontSize(8);
+        doc.setTextColor(138, 153, 170);
+        doc.text('Generated: ' + date, pageW / 2, 35, { align: 'center' });
+
+        let y = 50;
+
+        // ── PURCHASE DETAILS ──
+        y = drawSectionHeader(doc, y, 'Purchase Details');
+        purchases.forEach((p, i) => {
+            drawTableRow(doc, y,
+                purchases.length > 1 ? `Purchase ${i + 1}` : 'Purchase Weight',
+                `${p.weight} kg  @  Rs.${p.price} / 20kg`
+            );
+            y += 9;
+        });
+        if (purchases.length > 1) {
+            drawTableRow(doc, y, 'Total Purchase Weight', `${result.totalWeight} kg`);
+            y += 9;
+            drawTableRow(doc, y, 'Weighted Avg Price (per 20kg)', `Rs.${result.avgPrice}`);
+            y += 9;
         } else {
-            doc.text('Aakho Palo Costing (per 20kg):', 30, y);
-            doc.text(`₹${result.aakhoPaloCosting}`, 150, y, { align: 'right' });
+            drawTableRow(doc, y, 'Total Purchase Weight', `${result.totalWeight} kg`);
+            y += 9;
         }
-        
+
+        y += 4;
+
+        // ── CLEANING DETAILS ──
+        y = drawSectionHeader(doc, y, 'Cleaning Details');
+        drawTableRow(doc, y, 'Default Expenses (per 20kg)', `Rs.${Calculator.getDefaultExpenses()}`);
+        y += 9;
+        drawTableRow(doc, y, 'Before Cleaning Costing (per 20kg)', `Rs.${result.beforeCleaningCosting}`);
+        y += 9;
+        drawTableRow(doc, y, 'Taiyar Weight', `${result.taiyarWeight} kg`);
+        y += 9;
+
+        y += 4;
+
+        // ── WASTAGE ──
+        y = drawSectionHeader(doc, y, 'Wastage');
+        drawTableRow(doc, y, 'Wastage Weight', `${result.wastageWeight} kg`);
+        y += 9;
+        drawTableRow(doc, y, 'Wastage %', `${result.wastagePercent}%`);
+        y += 9;
+
+        y += 4;
+
+        // ── RECLEANING (only if filled) ──
+        if (hasOneNumber) {
+            y = drawSectionHeader(doc, y, 'Recleaning Details');
+            drawTableRow(doc, y, 'Recleaning Weight', `${result.recleaningWeight} kg`);
+            y += 9;
+            drawTableRow(doc, y, 'Recleaning Price (per 20kg)', `Rs.${result.recleaningPrice}`);
+            y += 9;
+            y += 4;
+        }
+
+        // ── FINAL RESULT ──
+        y = drawSectionHeader(doc, y, 'Final Costing Result');
+        if (hasOneNumber) {
+            drawTableRow(doc, y, '1 Number Costing (per 20kg)', `Rs.${result.oneNumberCosting}`, false, true);
+        } else {
+            drawTableRow(doc, y, 'Aakho Palo Costing (per 20kg)', `Rs.${result.aakhoPaloCosting}`, false, true);
+        }
+        y += 9;
+
+        // ── FOOTER ──
+        const footerY = doc.internal.pageSize.getHeight() - 12;
+        doc.setFillColor(15, 30, 53);
+        doc.rect(0, footerY - 4, pageW, 16, 'F');
+        doc.setTextColor(138, 153, 170);
+        doc.setFontSize(7.5);
+        doc.setFont(undefined, 'normal');
+        doc.text('Commodity Calculator  •  Confidential', pageW / 2, footerY + 4, { align: 'center' });
+
         // Save
-        const fileName = `${commodityNames[currentCommodity].replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+        const fileName = `${commodityName.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
         doc.save(fileName);
-        
+
     } catch (error) {
         console.error('Error exporting PDF:', error);
-        alert('❌ Failed to export PDF');
+        alert('Rs. Failed to export PDF');
     }
 }
