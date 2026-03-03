@@ -969,7 +969,7 @@ function resetMix() {
     document.getElementById('mix-result').classList.add('hidden');
     document.getElementById('purchase-summary').classList.add('hidden');
     document.getElementById('mix-export-section').classList.add('hidden');
-    document.getElementById('edit-mix-btn').classList.add('hidden');
+    document.getElementById('mix-input-summary').classList.add('hidden');
 }
 
 // When opening profile modal, fetch and show subscription
