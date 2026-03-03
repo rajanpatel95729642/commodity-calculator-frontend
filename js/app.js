@@ -928,7 +928,7 @@ async function calculateMix() {
     }
 
     summaryHTML += `</div>`;
-    document.getElementById('mix-result').innerHTML = summaryHTML + document.getElementById('mix-result').innerHTML;
+    document.getElementById('mix-input-summary').innerHTML = summaryHTML;
 
     document.getElementById('mix-input-card').classList.add('hidden');
     document.getElementById('mix-result').classList.remove('hidden');
@@ -969,7 +969,7 @@ function resetMix() {
     document.getElementById('mix-result').classList.add('hidden');
     document.getElementById('purchase-summary').classList.add('hidden');
     document.getElementById('mix-export-section').classList.add('hidden');
-    document.getElementById('mix-input-summary').classList.add('hidden');
+    document.getElementById('mix-input-summary').innerHTML = '';
 }
 
 // When opening profile modal, fetch and show subscription
