@@ -894,6 +894,42 @@ async function calculateMix() {
         document.getElementById('one-number-result').classList.add('hidden');
     }
 
+    // Build input summary HTML
+    let summaryHTML = `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:0.75rem 1rem;margin-bottom:0.5rem;">`;
+
+    // Purchases
+    purchases.forEach((p, i) => {
+        summaryHTML += `<div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#64748b;margin-bottom:0.2rem;">
+            <span>Purchase ${purchases.length > 1 ? (i+1) : ''} Weight</span>
+            <span style="font-weight:600;color:#334155;">${p.weight} kg @ ₹${p.price}/20kg</span>
+        </div>`;
+    });
+
+    // Avg price (if multiple purchases)
+    if (purchases.length > 1) {
+        summaryHTML += `<div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#64748b;margin-bottom:0.2rem;">
+            <span>Weighted Avg Price</span>
+            <span style="font-weight:600;color:#334155;">₹${result.avgPrice}/20kg</span>
+        </div>`;
+    }
+
+    // Taiyar weight
+    summaryHTML += `<div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#64748b;margin-bottom:0.2rem;">
+        <span>Taiyar Weight</span>
+        <span style="font-weight:600;color:#334155;">${result.taiyarWeight} kg</span>
+    </div>`;
+
+    // Recleaning (only if filled)
+    if (result.recleaningWeight) {
+        summaryHTML += `<div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#64748b;margin-bottom:0.2rem;">
+            <span>Recleaning</span>
+            <span style="font-weight:600;color:#334155;">${result.recleaningWeight} kg @ ₹${result.recleaningPrice}/20kg</span>
+        </div>`;
+    }
+
+    summaryHTML += `</div>`;
+    document.getElementById('mix-result').innerHTML = summaryHTML + document.getElementById('mix-result').innerHTML;
+
     document.getElementById('mix-input-card').classList.add('hidden');
     document.getElementById('mix-result').classList.remove('hidden');
     document.getElementById('mix-export-section').classList.remove('hidden');
