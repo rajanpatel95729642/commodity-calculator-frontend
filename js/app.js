@@ -203,9 +203,8 @@ function setupEventListeners() {
     document.getElementById('calculate-simple').addEventListener('click', async function(e) {
     e.preventDefault();
     await calculateSimple();
+    });
 
-    
-});
     document.getElementById('edit-mix-btn').querySelector('button').addEventListener('click', function(e) {
         e.preventDefault();
         editMix();
@@ -329,6 +328,46 @@ function setupEventListeners() {
         e.preventDefault();
         showNameModal();
     });
+    // Interest Calculator
+    document.getElementById('open-interest-calc').addEventListener('click', function(e) {
+        e.preventDefault();
+        hideMenu();
+        showInterestCalculator();
+    });
+
+    document.getElementById('close-interest').addEventListener('click', function(e) {
+        e.preventDefault();
+        hideInterestCalculator();
+    });
+
+    document.getElementById('calculate-interest').addEventListener('click', async function(e) {
+        e.preventDefault();
+        await calculateInterest();
+    });
+
+    document.getElementById('reset-interest').addEventListener('click', function(e) {
+        e.preventDefault();
+        resetInterest();
+    });
+
+    document.getElementById('edit-interest-action').addEventListener('click', function(e) {
+        e.preventDefault();
+        editInterest();
+    });
+
+    document.getElementById('export-interest-pdf').addEventListener('click', function(e) {
+        e.preventDefault();
+        exportInterestPDF();
+    });
+
+    document.getElementById('save-interest-history').addEventListener('click', function(e) {
+        e.preventDefault();
+        showInterestNameModal();
+    });
+
+    // Date change listener for days preview
+    document.getElementById('interest-start-date').addEventListener('change', updateInterestDaysPreview);
+    document.getElementById('interest-end-date').addEventListener('change', updateInterestDaysPreview);
 }
 
 // Global variable to store current commodity
@@ -1621,5 +1660,292 @@ function exportMixPDF() {
     } catch (error) {
         console.error('Error exporting PDF:', error);
         alert('Rs. Failed to export PDF');
+    }
+}
+
+// ========================================
+// INTEREST CALCULATOR FUNCTIONS
+// ========================================
+
+function showInterestCalculator() {
+    document.getElementById('calculator-screen').classList.add('hidden');
+    document.getElementById('interest-screen').classList.remove('hidden');
+    resetInterest();
+}
+
+function hideInterestCalculator() {
+    document.getElementById('interest-screen').classList.add('hidden');
+    document.getElementById('calculator-screen').classList.remove('hidden');
+}
+
+function updateInterestDaysPreview() {
+    const start = document.getElementById('interest-start-date').value;
+    const end = document.getElementById('interest-end-date').value;
+    const preview = document.getElementById('interest-days-preview');
+    const countEl = document.getElementById('interest-days-count');
+
+    if (start && end) {
+        const s = new Date(start);
+        const e = new Date(end);
+        if (e > s) {
+            const days = Math.floor((e - s) / (1000 * 60 * 60 * 24)) - 1;
+            countEl.textContent = (days > 0 ? days : 0) + ' days';
+            preview.classList.remove('hidden');
+        } else {
+            preview.classList.add('hidden');
+        }
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+
+async function calculateInterest() {
+    const allowed = await PremiumSystem.canCalculate();
+    if (!allowed) return;
+
+    const principal = document.getElementById('interest-principal').value;
+    const rate = document.getElementById('interest-rate').value;
+    const startDate = document.getElementById('interest-start-date').value;
+    const endDate = document.getElementById('interest-end-date').value;
+
+    const result = Calculator.calculateInterest(principal, rate, startDate, endDate);
+
+    if (result.error) {
+        alert(result.error);
+        return;
+    }
+
+    // Format dates nicely
+    const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+
+    // Input summary
+    document.getElementById('interest-input-summary').innerHTML = `
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#64748b;margin-bottom:0.2rem;">
+            <span>Principal Amount</span>
+            <span style="font-weight:600;color:#334155;">Rs.${result.principal}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#64748b;margin-bottom:0.2rem;">
+            <span>Interest Rate</span>
+            <span style="font-weight:600;color:#334155;">${result.rate}% per year</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#64748b;margin-bottom:0.2rem;">
+            <span>From</span>
+            <span style="font-weight:600;color:#334155;">${fmtDate(result.startDate)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#64748b;">
+            <span>To</span>
+            <span style="font-weight:600;color:#334155;">${fmtDate(result.endDate)}</span>
+        </div>
+    `;
+
+    // Results
+    document.getElementById('result-interest-days').textContent = result.totalDays + ' days';
+    document.getElementById('result-interest-amount').textContent = 'Rs.' + result.interest;
+    document.getElementById('result-interest-total').textContent = 'Rs.' + result.total;
+    document.getElementById('result-interest-principal-display').textContent = 'Rs.' + result.principal;
+    document.getElementById('result-interest-amount-display').textContent = 'Rs.' + result.interest;
+
+    // Show result, hide input
+    document.getElementById('interest-input-card').classList.add('hidden');
+    document.getElementById('interest-result').classList.remove('hidden');
+    document.getElementById('interest-export-section').classList.remove('hidden');
+    document.getElementById('edit-interest-btn').classList.remove('hidden');
+
+    await PremiumSystem.incrementUsage();
+}
+
+function editInterest() {
+    document.getElementById('interest-input-card').classList.remove('hidden');
+    document.getElementById('interest-result').classList.add('hidden');
+    document.getElementById('interest-export-section').classList.add('hidden');
+    document.getElementById('edit-interest-btn').classList.add('hidden');
+}
+
+function resetInterest() {
+    document.getElementById('interest-principal').value = '';
+    document.getElementById('interest-rate').value = '';
+    document.getElementById('interest-start-date').value = '';
+    document.getElementById('interest-end-date').value = '';
+    document.getElementById('interest-days-preview').classList.add('hidden');
+    document.getElementById('interest-input-card').classList.remove('hidden');
+    document.getElementById('interest-result').classList.add('hidden');
+    document.getElementById('interest-export-section').classList.add('hidden');
+    document.getElementById('edit-interest-btn').classList.add('hidden');
+    document.getElementById('interest-input-summary').innerHTML = '';
+}
+
+function showInterestNameModal() {
+    document.getElementById('name-vakal-input').value = '';
+    document.getElementById('name-modal').classList.remove('hidden');
+    // Flag that we're saving interest
+    window._savingInterest = true;
+}
+
+// Hook into existing confirmSaveToHistory
+const _originalConfirmSave = confirmSaveToHistory;
+window.confirmSaveToHistory = async function() {
+    if (window._savingInterest) {
+        window._savingInterest = false;
+        const nameVakal = document.getElementById('name-vakal-input').value.trim();
+        if (!nameVakal) { alert('Name/Vakal is required!'); return; }
+        await saveInterestToHistory(nameVakal);
+        hideNameModal();
+        return;
+    }
+    await _originalConfirmSave();
+};
+
+async function saveInterestToHistory(nameVakal) {
+    const principal = document.getElementById('interest-principal').value;
+    const rate = document.getElementById('interest-rate').value;
+    const startDate = document.getElementById('interest-start-date').value;
+    const endDate = document.getElementById('interest-end-date').value;
+
+    const result = Calculator.calculateInterest(principal, rate, startDate, endDate);
+    if (result.error) { alert(result.error); return; }
+
+    const saveData = {
+        nameVakal: nameVakal,
+        principal: result.principal,
+        rate: result.rate,
+        startDate: result.startDate,
+        endDate: result.endDate,
+        totalDays: result.totalDays,
+        interest: result.interest,
+        total: result.total
+    };
+
+    try {
+        await Calculator.saveToHistory('interest', saveData, 'interest');
+        alert('✅ Saved to history!');
+    } catch (error) {
+        alert('❌ Failed to save: ' + error.message);
+        throw error;
+    }
+}
+
+function exportInterestPDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const pageW = doc.internal.pageSize.getWidth();
+        const margin = 15;
+        const colLeft = margin;
+        const colRight = pageW - margin;
+        const tableWidth = colRight - colLeft;
+
+        const principal = document.getElementById('interest-principal').value;
+        const rate = document.getElementById('interest-rate').value;
+        const startDate = document.getElementById('interest-start-date').value;
+        const endDate = document.getElementById('interest-end-date').value;
+        const result = Calculator.calculateInterest(principal, rate, startDate, endDate);
+        if (result.error) { alert(result.error); return; }
+
+        const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+        const date = new Date().toLocaleString('en-IN');
+
+        function drawTableRow(doc, y, label, value, isHighlight = false) {
+            const rowH = 9;
+            if (isHighlight) {
+                doc.setFillColor(255, 248, 225);
+                doc.rect(colLeft, y, tableWidth, rowH, 'F');
+                doc.setTextColor(15, 30, 53);
+                doc.setFontSize(9.5);
+                doc.setFont(undefined, 'bold');
+                doc.text(label, colLeft + 4, y + 6.2);
+                doc.setTextColor(30, 78, 216);
+                doc.text(value, colRight - 4, y + 6.2, { align: 'right' });
+            } else {
+                doc.setFillColor(255, 255, 255);
+                doc.rect(colLeft, y, tableWidth, rowH, 'F');
+                doc.setTextColor(71, 85, 105);
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'normal');
+                doc.text(label, colLeft + 4, y + 6.2);
+                doc.setTextColor(15, 30, 53);
+                doc.setFont(undefined, 'semibold');
+                doc.text(value, colRight - 4, y + 6.2, { align: 'right' });
+            }
+            doc.setDrawColor(220, 226, 234);
+            doc.setLineWidth(0.3);
+            doc.rect(colLeft, y, tableWidth, rowH);
+        }
+
+        function drawSectionHeader(doc, y, title) {
+            doc.setFillColor(245, 248, 252);
+            doc.rect(colLeft, y, tableWidth, 8, 'F');
+            doc.setDrawColor(201, 168, 76);
+            doc.setLineWidth(0.6);
+            doc.line(colLeft, y, colLeft, y + 8);
+            doc.setLineWidth(0.3);
+            doc.setDrawColor(220, 226, 234);
+            doc.rect(colLeft, y, tableWidth, 8);
+            doc.setTextColor(15, 30, 53);
+            doc.setFontSize(8.5);
+            doc.setFont(undefined, 'bold');
+            doc.text(title.toUpperCase(), colLeft + 6, y + 5.5);
+            return y + 8;
+        }
+
+        // Header
+        doc.setFillColor(15, 30, 53);
+        doc.rect(0, 0, pageW, 38, 'F');
+        doc.setFillColor(201, 168, 76);
+        doc.rect(0, 38, pageW, 2, 'F');
+        doc.setTextColor(245, 240, 232);
+        doc.setFontSize(18);
+        doc.setFont(undefined, 'bold');
+        doc.text('Interest Calculator', pageW / 2, 16, { align: 'center' });
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(201, 168, 76);
+        doc.text('Simple Interest — Daily Calculation Report', pageW / 2, 27, { align: 'center' });
+        doc.setFontSize(8);
+        doc.setTextColor(138, 153, 170);
+        doc.text('Generated: ' + date, pageW / 2, 35, { align: 'center' });
+
+        let y = 50;
+
+        // Loan Details
+        y = drawSectionHeader(doc, y, 'Loan / Amount Details');
+        drawTableRow(doc, y, 'Principal Amount', 'Rs.' + result.principal);
+        y += 9;
+        drawTableRow(doc, y, 'Interest Rate (per year)', result.rate + '%');
+        y += 9;
+        y += 4;
+
+        // Date Details
+        y = drawSectionHeader(doc, y, 'Date Details');
+        drawTableRow(doc, y, 'Start Date', fmtDate(result.startDate));
+        y += 9;
+        drawTableRow(doc, y, 'End Date', fmtDate(result.endDate));
+        y += 9;
+        drawTableRow(doc, y, 'Total Days (excl. start & end)', result.totalDays + ' days');
+        y += 9;
+        y += 4;
+
+        // Result
+        y = drawSectionHeader(doc, y, 'Interest Result');
+        drawTableRow(doc, y, 'Principal Amount', 'Rs.' + result.principal);
+        y += 9;
+        drawTableRow(doc, y, 'Interest Amount', 'Rs.' + result.interest);
+        y += 9;
+        drawTableRow(doc, y, 'Total Amount (Principal + Interest)', 'Rs.' + result.total, true);
+        y += 9;
+
+        // Footer
+        const footerY = doc.internal.pageSize.getHeight() - 12;
+        doc.setFillColor(15, 30, 53);
+        doc.rect(0, footerY - 4, pageW, 16, 'F');
+        doc.setTextColor(138, 153, 170);
+        doc.setFontSize(7.5);
+        doc.setFont(undefined, 'normal');
+        doc.text('Interest Calculator  •  Confidential', pageW / 2, footerY + 4, { align: 'center' });
+
+        doc.save(`Interest_Report_${Date.now()}.pdf`);
+
+    } catch (error) {
+        console.error('Error exporting PDF:', error);
+        alert('Failed to export PDF');
     }
 }

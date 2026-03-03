@@ -1132,6 +1132,11 @@
                 <span class="menu-item-name">Isabgul</span>
                 <span class="menu-arrow">›</span>
             </button>
+            <div style="border-top:1px solid var(--border);margin:0.5rem 0;"></div>
+            <button class="menu-item" id="open-interest-calc">
+                <span class="menu-item-name" style="color:#1d4ed8;">📈 Interest Calculator</span>
+                <span class="menu-arrow">›</span>
+            </button>
         </div>
     </div>
 </div>
@@ -1212,6 +1217,130 @@
     </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════
+     INTEREST CALCULATOR SCREEN
+═══════════════════════════════════════════════════ -->
+<div id="interest-screen" class="screen hidden">
+    <header class="screen-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div class="brand-dot"></div>
+            <span class="screen-title">Interest Calculator</span>
+        </div>
+        <button id="close-interest" class="icon-btn" style="color:var(--slate);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+        </button>
+    </header>
+
+    <div class="app-body">
+
+        <!-- Input Card -->
+        <div id="interest-input-card" class="card">
+            <div class="card-title">Loan / Amount Details</div>
+
+            <div class="field-group">
+                <label class="field-label">Principal Amount (₹) <span class="req">*</span></label>
+                <input type="number" id="interest-principal" placeholder="100000">
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Interest Rate (% per year) <span class="req">*</span></label>
+                <input type="number" id="interest-rate" placeholder="12" step="0.01">
+            </div>
+
+            <div class="field-row">
+                <div class="field-group">
+                    <label class="field-label">Start Date <span class="req">*</span></label>
+                    <input type="date" id="interest-start-date"
+                        style="width:100%;padding:0.65rem 0.85rem;border:1.5px solid var(--border);
+                               border-radius:5px;font-family:'DM Sans',sans-serif;font-size:0.95rem;
+                               color:var(--navy);background:#fafbfc;outline:none;">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">End Date <span class="req">*</span></label>
+                    <input type="date" id="interest-end-date"
+                        style="width:100%;padding:0.65rem 0.85rem;border:1.5px solid var(--border);
+                               border-radius:5px;font-family:'DM Sans',sans-serif;font-size:0.95rem;
+                               color:var(--navy);background:#fafbfc;outline:none;">
+                </div>
+            </div>
+
+            <!-- Days preview -->
+            <div id="interest-days-preview" class="hidden"
+                style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;
+                       border-radius:6px;padding:0.6rem 1rem;margin-bottom:0.75rem;
+                       display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:0.83rem;color:#0369a1;">Total Days (Excluding start & end)</span>
+                <span id="interest-days-count" style="font-weight:800;color:#1d4ed8;font-size:1rem;">0 days</span>
+            </div>
+
+            <div class="field-row" style="gap:0.5rem;">
+                <button id="calculate-interest" class="btn btn-gold">Calculate</button>
+                <button id="reset-interest" class="btn btn-ghost">Reset</button>
+            </div>
+        </div>
+
+        <!-- Edit Button -->
+        <div id="edit-interest-btn" class="hidden" style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;">
+            <button id="edit-interest-action" style="background:var(--navy);color:var(--cream);border:none;border-radius:6px;
+                    padding:0.45rem 1rem;font-size:0.82rem;font-weight:600;cursor:pointer;
+                    display:flex;align-items:center;gap:6px;">
+                ✏️ Edit
+            </button>
+        </div>
+
+        <!-- Result -->
+        <div id="interest-result" class="hidden">
+
+            <!-- Input Summary -->
+            <div id="interest-input-summary"
+                style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;
+                       padding:0.75rem 1rem;margin-bottom:0.5rem;">
+            </div>
+
+            <!-- Days -->
+            <div class="result-card result-card-blue" style="margin-top:0;">
+                <div class="result-row">
+                    <span class="result-label">Total Days</span>
+                    <span id="result-interest-days" class="result-value result-value-blue result-value-lg">0</span>
+                </div>
+            </div>
+
+            <!-- Interest -->
+            <div class="result-card result-card-amber" style="margin-top:0.5rem;">
+                <div class="result-row">
+                    <span class="result-label" style="font-weight:600;">Interest Amount</span>
+                    <span id="result-interest-amount" class="result-value result-value-amber result-value-lg">₹0.00</span>
+                </div>
+            </div>
+
+            <!-- Total -->
+            <div class="result-card result-card-primary" style="margin-top:0.5rem;">
+                <div class="result-row">
+                    <span class="result-label-light" style="font-weight:600;">Total Amount</span>
+                    <span id="result-interest-total" class="result-value-lg-light">₹0.00</span>
+                </div>
+                <div class="result-row" style="margin-top:0.35rem;">
+                    <span class="result-label-light">Principal</span>
+                    <span id="result-interest-principal-display" class="result-value-light">₹0.00</span>
+                </div>
+                <hr class="result-divider result-divider-light">
+                <div class="result-row">
+                    <span class="result-label-light">Interest</span>
+                    <span id="result-interest-amount-display" class="result-value-light">₹0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Bar -->
+        <div id="interest-export-section" class="export-bar hidden">
+            <button id="export-interest-pdf" class="btn btn-danger btn-sm" style="flex:1;">📄 Export PDF</button>
+            <button id="save-interest-history" class="btn btn-success btn-sm" style="flex:1;">💾 Save</button>
+        </div>
+
+    </div>
+</div>
 
 <!-- ═══════════════════════════════════════════════════
      MAINTENANCE CHECK — RUNS FIRST BEFORE ALL SCRIPTS
@@ -1297,6 +1426,8 @@
             }
         });
     });
+
+
 </script>
 
 </body>

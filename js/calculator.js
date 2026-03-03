@@ -206,6 +206,40 @@ const Calculator = {
         return result;
     },
 
+    // Interest Calculator
+    calculateInterest: function(principal, rate, startDate, endDate) {
+        const p = parseFloat(principal);
+        const r = parseFloat(rate);
+
+        if (isNaN(p) || p <= 0) return { error: 'Please enter a valid principal amount' };
+        if (isNaN(r) || r <= 0) return { error: 'Please enter a valid interest rate' };
+        if (!startDate || !endDate) return { error: 'Please select both start and end dates' };
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (end <= start) return { error: 'End date must be after start date' };
+
+        // Exclude both start and end date
+        const diffTime = end.getTime() - start.getTime();
+        const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) - 1;
+
+        if (totalDays <= 0) return { error: 'Date range too small — no days to calculate' };
+
+        const interest = (p * r * totalDays) / (100 * 365);
+        const total = p + interest;
+
+        return {
+            principal: p.toFixed(2),
+            rate: r.toFixed(2),
+            startDate: startDate,
+            endDate: endDate,
+            totalDays: totalDays,
+            interest: interest.toFixed(2),
+            total: total.toFixed(2)
+        };
+    },
+    
     // Set default expenses (CLOUD ONLY)
     setDefaultExpenses: async function(value) {
         const exp = parseFloat(value);
