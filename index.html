@@ -949,7 +949,6 @@
                     <input type="number" id="taiyar-weight" placeholder="950">
                 </div>
 
-                <!-- Recleaning -->
                 <div class="recleaning-box">
                     <div class="recleaning-box-title">Recleaning — Optional (for 1 Number Costing)</div>
                     <div class="field-row">
@@ -968,50 +967,50 @@
                     <button id="calculate-mix" class="btn btn-gold">Calculate</button>
                     <button id="reset-mix" class="btn btn-ghost">Reset</button>
                 </div>
-                
-                <div id="edit-mix-btn" class="hidden" style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;">
-                    <button style="background:var(--navy);color:var(--cream);border:none;border-radius:6px;
-                            padding:0.45rem 1rem;font-size:0.82rem;font-weight:600;cursor:pointer;
-                            display:flex;align-items:center;gap:6px;">
-                        ✏️ Edit
-                    </button>
-                </div>
 
-                <!-- Mix Result -->
-                <div id="mix-result" class="hidden">
-                    <div class="result-card result-card-amber" style="margin-top:0.75rem;">
-                        <div class="result-row">
-                            <span class="result-label" style="font-weight:600;">Wastage</span>
-                            <span class="result-value result-value-amber">
-                                <span id="result-wastage-weight">0</span> kg
-                                (<span id="result-wastage-percent">0</span>%)
-                            </span>
-                        </div>
-                    </div>
+            </div><!-- ← mix-input-card ENDS HERE -->
 
-                    <div id="aakho-palo-result" class="result-card result-card-blue" style="margin-top:0.5rem;">
-                        <div class="result-row">
-                            <span class="result-label">Aakho Palo Costing (per 20kg)</span>
-                            <span id="result-aakho-palo" class="result-value result-value-blue result-value-lg">₹0.00</span>
-                        </div>
-                    </div>
+            <!-- Edit Button — OUTSIDE card -->
+            <div id="edit-mix-btn" class="hidden" style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;">
+                <button style="background:var(--navy);color:var(--cream);border:none;border-radius:6px;
+                        padding:0.45rem 1rem;font-size:0.82rem;font-weight:600;cursor:pointer;
+                        display:flex;align-items:center;gap:6px;">
+                    ✏️ Edit
+                </button>
+            </div>
 
-                    <div id="one-number-result" class="result-card result-card-purple hidden" style="margin-top:0.5rem;">
-                        <div class="result-row">
-                            <span class="result-label">1 Number Costing (per 20kg)</span>
-                            <span id="result-one-number" class="result-value result-value-purple result-value-lg">₹0.00</span>
-                        </div>
+            <!-- Mix Result — OUTSIDE card -->
+            <div id="mix-result" class="hidden">
+                <div class="result-card result-card-amber" style="margin-top:0.75rem;">
+                    <div class="result-row">
+                        <span class="result-label" style="font-weight:600;">Wastage</span>
+                        <span class="result-value result-value-amber">
+                            <span id="result-wastage-weight">0</span> kg
+                            (<span id="result-wastage-percent">0</span>%)
+                        </span>
                     </div>
                 </div>
-
-                <!-- Export -->
-                <div id="mix-export-section" class="export-bar hidden">
-                    <button id="export-mix-pdf" class="btn btn-danger btn-sm" style="flex:1;">📄 Export PDF</button>
-                    <button id="save-mix-history" class="btn btn-success btn-sm" style="flex:1;">💾 Save</button>
+                <div id="aakho-palo-result" class="result-card result-card-blue" style="margin-top:0.5rem;">
+                    <div class="result-row">
+                        <span class="result-label">Aakho Palo Costing (per 20kg)</span>
+                        <span id="result-aakho-palo" class="result-value result-value-blue result-value-lg">₹0.00</span>
+                    </div>
+                </div>
+                <div id="one-number-result" class="result-card result-card-purple hidden" style="margin-top:0.5rem;">
+                    <div class="result-row">
+                        <span class="result-label">1 Number Costing (per 20kg)</span>
+                        <span id="result-one-number" class="result-value result-value-purple result-value-lg">₹0.00</span>
+                    </div>
                 </div>
             </div>
-           
-        </div>
+
+            <!-- Export — OUTSIDE card -->
+            <div id="mix-export-section" class="export-bar hidden">
+                <button id="export-mix-pdf" class="btn btn-danger btn-sm" style="flex:1;">📄 Export PDF</button>
+                <button id="save-mix-history" class="btn btn-success btn-sm" style="flex:1;">💾 Save</button>
+            </div>
+
+        </div><!-- ← commodity-calculator ENDS HERE -->
 
     </div><!-- end app-body -->
 </div><!-- end calculator-screen -->
