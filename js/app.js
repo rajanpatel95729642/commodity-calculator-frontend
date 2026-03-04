@@ -367,12 +367,12 @@ function setupEventListeners() {
 
     document.getElementById('interest-history-btn').addEventListener('click', async function(e) {
         e.preventDefault();
+        window._historyFromInterest = true;
         document.getElementById('interest-screen').classList.add('hidden');
         document.getElementById('history-screen').classList.remove('hidden');
         const filter = document.getElementById('commodity-filter');
         filter.value = 'interest';
-        const filterContainer = document.getElementById('commodity-filter-container');
-        filterContainer.classList.add('hidden');
+        document.getElementById('commodity-filter-container').classList.add('hidden');
         await displayHistory();
     });
 
@@ -1098,7 +1098,10 @@ async function showHistory() {
 
 function hideHistory() {
     document.getElementById('history-screen').classList.add('hidden');
-    if (!document.getElementById('interest-screen').classList.contains('hidden-before-history')) {
+    if (window._historyFromInterest) {
+        window._historyFromInterest = false;
+        document.getElementById('interest-screen').classList.remove('hidden');
+    } else {
         document.getElementById('calculator-screen').classList.remove('hidden');
     }
 }
