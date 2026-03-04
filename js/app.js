@@ -1183,6 +1183,8 @@ function renderHistoryItem(item) {
     if (!calculationType || calculationType === '') {
         if (item.commodity === 'souff') {
             calculationType = 'souff';
+        } else if (item.commodity === 'interest') {
+            calculationType = 'interest';
         } else if (item.commodity) {
             calculationType = 'mix';
         } else {
@@ -1673,7 +1675,9 @@ function exportMixPDF() {
 // ========================================
 
 function showInterestCalculator() {
-    document.getElementById('calculator-screen').classList.add('hidden');
+    document.getElementById('calculator-screen').classList.remove('hidden');
+    document.getElementById('history-screen').classList.add('hidden');
+    document.getElementById('settings-screen').classList.add('hidden');
     document.getElementById('interest-screen').classList.remove('hidden');
     resetInterest();
 }
