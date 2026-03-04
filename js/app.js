@@ -370,8 +370,7 @@ function setupEventListeners() {
         window._historyFromInterest = true;
         document.getElementById('interest-screen').classList.add('hidden');
         document.getElementById('history-screen').classList.remove('hidden');
-        const filter = document.getElementById('commodity-filter');
-        filter.value = 'interest';
+        document.getElementById('commodity-filter').value = 'interest';
         document.getElementById('commodity-filter-container').classList.add('hidden');
         await displayHistory();
     });
