@@ -365,6 +365,17 @@ function setupEventListeners() {
         showInterestNameModal();
     });
 
+    document.getElementById('interest-history-btn').addEventListener('click', async function(e) {
+        e.preventDefault();
+        document.getElementById('interest-screen').classList.add('hidden');
+        document.getElementById('history-screen').classList.remove('hidden');
+        const filter = document.getElementById('commodity-filter');
+        filter.value = 'interest';
+        const filterContainer = document.getElementById('commodity-filter-container');
+        filterContainer.classList.add('hidden');
+        await displayHistory();
+    });
+
     // Date change listener for days preview
     document.getElementById('interest-start-date').addEventListener('change', updateInterestDaysPreview);
     document.getElementById('interest-end-date').addEventListener('change', updateInterestDaysPreview);
@@ -1087,7 +1098,9 @@ async function showHistory() {
 
 function hideHistory() {
     document.getElementById('history-screen').classList.add('hidden');
-    document.getElementById('calculator-screen').classList.remove('hidden');
+    if (!document.getElementById('interest-screen').classList.contains('hidden-before-history')) {
+        document.getElementById('calculator-screen').classList.remove('hidden');
+    }
 }
 
 async function displayHistory() {
