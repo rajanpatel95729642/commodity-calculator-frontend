@@ -719,6 +719,7 @@ function showSettings() {
     
     // Load current values
     document.getElementById('default-expenses').value = Calculator.getDefaultExpenses();
+    document.getElementById('default-interest-rate').value = localStorage.getItem('defaultInterestRate') || '12';
     const fontSize = localStorage.getItem('fontSize') || 'medium';
     document.getElementById('font-size').value = fontSize;
 }
@@ -731,6 +732,8 @@ function hideSettings() {
 async function saveSettings() {
     const expenses = document.getElementById('default-expenses').value;
     const fontSize = document.getElementById('font-size').value;
+    const interestRate = document.getElementById('default-interest-rate').value;
+    if (interestRate) localStorage.setItem('defaultInterestRate', interestRate);
     
     try {
         // Save expenses (now syncs to cloud if logged in)
@@ -1725,6 +1728,9 @@ function showInterestCalculator() {
     document.getElementById('interest-screen').classList.remove('hidden');
     document.getElementById('history-btn').classList.add('hidden');
     resetInterest();
+    // Auto-fill default interest rate
+    const defaultRate = localStorage.getItem('defaultInterestRate') || '12';
+    document.getElementById('interest-rate').value = defaultRate;
 }
 
 function hideInterestCalculator() {
