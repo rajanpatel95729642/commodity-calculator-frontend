@@ -1336,7 +1336,35 @@ function renderHistoryItem(item) {
             </div>
         `;
     } else if (calculationType === 'interest') {
-    // paste the interest detailsHTML block here
+    const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+    detailsHTML = `
+        <div style="font-size:0.875rem;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.35rem;">
+                <span style="color:var(--slate);">Principal Amount</span>
+                <span style="font-weight:600;color:var(--navy);">Rs.${item.data.principal || 'N/A'}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.35rem;">
+                <span style="color:var(--slate);">Interest Rate</span>
+                <span style="font-weight:600;color:var(--navy);">${item.data.rate || 'N/A'}% per year</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.35rem;">
+                <span style="color:var(--slate);">Period</span>
+                <span style="font-weight:600;color:var(--navy);">${fmtDate(item.data.startDate)} → ${fmtDate(item.data.endDate)}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.35rem;">
+                <span style="color:var(--slate);">Total Days</span>
+                <span style="font-weight:600;color:#1d4ed8;">${item.data.totalDays || 'N/A'} days</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:0.35rem;">
+                <span style="color:var(--slate);">Interest Amount</span>
+                <span style="font-weight:600;color:#92400e;">Rs.${item.data.interest || 'N/A'}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:0.4rem;margin-top:0.1rem;">
+                <span style="font-weight:700;color:var(--navy);">Total Amount</span>
+                <span style="font-weight:800;color:#1d4ed8;font-size:1rem;">Rs.${item.data.total || 'N/A'}</span>
+            </div>
+        </div>
+    `;
     } else {
         console.error('❌ Unknown type:', calculationType);
         detailsHTML = `<p class="text-red-500 text-sm">Unknown calculation type: ${calculationType}</p>`;
@@ -1679,12 +1707,14 @@ function showInterestCalculator() {
     document.getElementById('history-screen').classList.add('hidden');
     document.getElementById('settings-screen').classList.add('hidden');
     document.getElementById('interest-screen').classList.remove('hidden');
+    document.getElementById('history-btn').classList.add('hidden');
     resetInterest();
 }
 
 function hideInterestCalculator() {
     document.getElementById('interest-screen').classList.add('hidden');
     document.getElementById('calculator-screen').classList.remove('hidden');
+    document.getElementById('history-btn').classList.remove('hidden');
 }
 
 function updateInterestDaysPreview() {
