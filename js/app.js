@@ -365,6 +365,31 @@ function setupEventListeners() {
         showInterestNameModal();
     });
 
+    document.getElementById('interest-settings-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const current = localStorage.getItem('defaultInterestRate') || '12';
+        document.getElementById('interest-default-rate-modal').value = current;
+        document.getElementById('interest-settings-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('close-interest-settings').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('interest-settings-modal').classList.add('hidden');
+    });
+
+    document.getElementById('save-interest-settings').addEventListener('click', function(e) {
+        e.preventDefault();
+        const rate = document.getElementById('interest-default-rate-modal').value;
+        if (rate && parseFloat(rate) > 0) {
+            localStorage.setItem('defaultInterestRate', rate);
+            document.getElementById('interest-rate').value = rate;
+            document.getElementById('interest-settings-modal').classList.add('hidden');
+            alert('✅ Default rate saved!');
+        } else {
+            alert('Please enter a valid rate');
+        }
+    });
+
     document.getElementById('interest-history-btn').addEventListener('click', async function(e) {
         e.preventDefault();
         window._historyFromInterest = true;
@@ -718,7 +743,6 @@ function showSettings() {
     
     // Load current values
     document.getElementById('default-expenses').value = Calculator.getDefaultExpenses();
-    document.getElementById('default-interest-rate').value = localStorage.getItem('defaultInterestRate') || '12';
     const fontSize = localStorage.getItem('fontSize') || 'medium';
     document.getElementById('font-size').value = fontSize;
 }
@@ -731,9 +755,7 @@ function hideSettings() {
 async function saveSettings() {
     const expenses = document.getElementById('default-expenses').value;
     const fontSize = document.getElementById('font-size').value;
-    const interestRate = document.getElementById('default-interest-rate').value;
-    if (interestRate) localStorage.setItem('defaultInterestRate', interestRate);
-    
+        
     try {
         // Save expenses (now syncs to cloud if logged in)
         if (await Calculator.setDefaultExpenses(expenses)) {
