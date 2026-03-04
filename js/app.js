@@ -1675,7 +1675,7 @@ function exportMixPDF() {
 // ========================================
 
 function showInterestCalculator() {
-    document.getElementById('calculator-screen').classList.remove('hidden');
+    document.getElementById('calculator-screen').classList.add('hidden');
     document.getElementById('history-screen').classList.add('hidden');
     document.getElementById('settings-screen').classList.add('hidden');
     document.getElementById('interest-screen').classList.remove('hidden');
