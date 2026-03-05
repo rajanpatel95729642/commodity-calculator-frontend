@@ -67,7 +67,8 @@ axios.interceptors.response.use(
                     const refreshToken = TokenManager.getRefreshToken();
                     if (refreshToken) {
                         const response = await axios.post('/auth/refresh', {}, {
-                            headers: { 'Authorization': `Bearer ${refreshToken}` }
+                            headers: { 'Authorization': `Bearer ${refreshToken}` },
+                            _retry: true  // prevent infinite loop
                         });
                         if (response.data.access_token) {
                             TokenManager.setTokens(response.data.access_token);
